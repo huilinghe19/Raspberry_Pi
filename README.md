@@ -6,14 +6,15 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 
 
 # Epics Server 
-1. Epics Base works on Raspberry Pi. (using Jördis Dokumentation).
+1. Epics Base works on Raspberry Pi (using Jördis's Dokumentation).
 
 2. To do: 
 
    Read Epics Streamdevice and Asyn documentation and find how they work. 
    
 # GPIB Device support
-1. Test how GPIB works. It does not work. No package gpib_ctypes is installed. 
+1. Test how GPIB works. It does not work with Keithley 2000. When I use Python to test the GPIB function, "No package gpib_ctypes is installed. ". 
+
       Install linux-gpib and raspi_gpib_driver. Information link: https://github.com/elektronomikon/raspi_gpib_driver
 
       
@@ -26,7 +27,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        cd linux-gpib-kernel-4.2.0
        ./configure
        
-2. After installing linux-gpib and raspi patch packages. There is something wrong in GPIB configuration file. 
+2. After installing linux-gpib and raspi patch packages. There is something wrong in GPIB configuration file. GPIB has not been installed in Raspberry. 
        
        >>> ibterm -b19
        >>> Error
