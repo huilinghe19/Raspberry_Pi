@@ -9,7 +9,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 1. Epics Base works on Raspberry Pi. (using Jördis Dokumentation)
 
 2. Test how GPIB works. It does not work. No package gpib_ctypes is installed.
-      Install linux-gpib and raspi_gpib_driver. 
+      Install linux-gpib and raspi_gpib_driver. Information link: https://github.com/elektronomikon/raspi_gpib_driver
 
       
             cd ~/Downloads
@@ -19,5 +19,4 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
             
             tar xzf linux-gpib-kernel-4.2.0.tar.gz
             cd linux-gpib-kernel-4.2.0
-            ./configure
-           
+            ./
