@@ -45,4 +45,4 @@ in Configure file:
 
 change LINUX_GPIB=0 as LINUX_GPIB=YES
 
-Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority)
+Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) ????? TO BE IMPROVED!!!!
