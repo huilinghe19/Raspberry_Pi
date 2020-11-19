@@ -33,7 +33,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        >>> cd linux-gpib-kernel-4.2.0
        >>> ./configure
        
-2. After installing linux-gpib and raspi patch packages(make install has been done). There is something wrong in GPIB configuration file. GPIB has not been installed in Raspberry. What is the address of the GPIB device? 
+2. After installing linux-gpib and raspi patch packages(make install has been done). There is something wrong in GPIB configuration file. GPIB has not been configured in Raspberry. What is the address of the GPIB device? 
        
        >>> ibterm -b19
        >>> Error
