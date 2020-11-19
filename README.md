@@ -20,7 +20,9 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        tar xzf linux-gpib-kernel-4.2.0.tar.gz
        cd linux-gpib-kernel-4.2.0
        ./configure
-            
+       
+3. GPIB configuration file error   
+       
        >>> ibterm -b19
        >>> Error
             
