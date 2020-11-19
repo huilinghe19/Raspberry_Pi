@@ -21,7 +21,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 # GPIB Device support
 1. Test how GPIB works. It does not work with Keithley 2000. When I use Python to test the GPIB function, "No package gpib_ctypes is installed. ". The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the 4.2.0 Version. Information link: https://github.com/elektronomikon/raspi_gpib_driver
 
-      Install linux-gpib and raspi_gpib_driver. The code is incomplete. Complete code can be seen in the link.
+      Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link. Version 4.2.0 is installed. The source code is unten ~/Downloads/HHL/
 
       
        >>> cd ~/Downloads
