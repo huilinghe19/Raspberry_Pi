@@ -8,4 +8,6 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 # Epics Server for GPIB Device
 1. Epics Base works on Raspberry Pi. (using Jördis Dokumentation)
 
-2. Test how GPIB works.
+2. Test how GPIB works. Install gpib_ctypes at first.   
+      
+        sudo apt install python3-pyvisa-py
