@@ -21,10 +21,10 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        cd linux-gpib-kernel-4.2.0
        ./configure
        
-3. After installing linux-gpib and raspi patch packaged. There is something wrong in GPIB configuration file. 
+3. After installing linux-gpib and raspi patch packages. There is something wrong in GPIB configuration file. 
        
        >>> ibterm -b19
        >>> Error
-            
-            
+       >>> sudo nano gpib.config
+       >>> ??????
             
