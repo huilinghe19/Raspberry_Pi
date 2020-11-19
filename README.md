@@ -8,7 +8,9 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 # Epics Server 
 1. Epics Base works on Raspberry Pi. (using Jördis Dokumentation).
 
-2. To do: Read Epics Streamdevice and Asyn documentation and find how they work. 
+2. To do: 
+
+   Read Epics Streamdevice and Asyn documentation and find how they work. 
    
 # GPIB Device support
 1. Test how GPIB works. It does not work. No package gpib_ctypes is installed. 
