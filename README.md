@@ -40,3 +40,8 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        >>> sudo nano gpib.config
        >>> ??????
             
+# Connection 
+in Configure file:
+change LINUX_GPIB=0 AS LINUX_GPIB=YES
+
+Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority)
