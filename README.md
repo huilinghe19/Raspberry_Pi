@@ -1,12 +1,12 @@
 # Aim
-Writing a Epics Server to connect GPIB Devices on Raspberry Platform 
+Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform 
 
 # Raspberry_Pi
-Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices(to be proved!!!). Now our aim is to connect the Raspberry Pi with Epics IOC for GPIB Device Control.
+Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Now our aim is to write Epics Server for GPIB Device Control on Raspberry Pi.
 
 
 # Epics Server 
-1. Epics Base works on Raspberry Pi (using Jördis's Dokumentation).
+1. Epics Base works on Raspberry Pi.
 
 2. To do: 
 
@@ -33,7 +33,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        >>> cd linux-gpib-kernel-4.2.0
        >>> ./configure
        
-2. After installing linux-gpib and raspi patch packages(make install has been done). There is something wrong in GPIB configuration file. GPIB has not been configured in Raspberry. What is the address of the GPIB device? 
+2. After installing linux-gpib and raspi patch packages(make install has been done). There is something wrong in GPIB configuration file. GPIB has not been configured in Raspberry. 19 is the address of the GPIB device. 
        
        >>> ibterm -b19
        >>> Error
