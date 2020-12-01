@@ -19,7 +19,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
    https://paulscherrerinstitute.github.io/StreamDevice/
    
 # GPIB Device support
-1. Test how GPIB works. It does not work with Keithley 2000. When I use Python to test the GPIB function, "No package gpib_ctypes is installed. ". The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the 4.2.0 Version. Information link: https://github.com/elektronomikon/raspi_gpib_driver
+1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the newest 4.3.0 Version. Information link: https://github.com/elektronomikon/raspi_gpib_driver
 
       Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link. Version 4.2.0 is installed. The source code is unten ~/Downloads/HHL/
 
@@ -32,14 +32,24 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        >>> tar xzf linux-gpib-kernel-4.2.0.tar.gz
        >>> cd linux-gpib-kernel-4.2.0
        >>> ./configure
+       -----patch-----
+       >>> make 
+       >>> sudo make install
        
-2. After installing linux-gpib and raspi patch packages(make install has been done). There is something wrong in GPIB configuration file. GPIB has not been configured in Raspberry. 19 is the address of the GPIB device. 
+2. After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
        
        >>> ibterm -b19
        >>> Error
        >>> sudo nano gpib.config
        >>> ??????
-            
+       
+3. python 3 test:
+
+       >>> from gpib_ctypes import gpib
+       >>> device = gpib.dev(0,19)
+       >>> gpib.write(device, b’*IDN?’)
+       >>> gpib.read(device, 100)
+      
 # Connection 
 in Configure file:
 
