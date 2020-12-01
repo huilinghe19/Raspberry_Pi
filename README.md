@@ -24,7 +24,11 @@ https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
    https://paulscherrerinstitute.github.io/StreamDevice/
    
 # GPIB Device support
-1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the newest 4.3.0 Version. Information link: https://github.com/elektronomikon/raspi_gpib_driver
+1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the newest 4.3.0 Version. 
+
+Information link:
+https://sourceforge.net/projects/linux-gpib/files/
+https://github.com/elektronomikon/raspi_gpib_driver
 
       Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link. Version 4.2.0 is installed. The source code is unten ~/Downloads/HHL/
 
