@@ -48,7 +48,9 @@ change LINUX_GPIB=0 as LINUX_GPIB=YES
 Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 
 $ sudo modprobe gpib_common
+
 $ sudo modprobe gpib_bitbang
+
 $ sudo gpib_config
 
 ./gpib_config
