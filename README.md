@@ -1,14 +1,19 @@
 # Aim
 Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform 
 
-# Raspberry_Pi
+# Raspberry Pi
 Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Now our aim is to write Epics Server for GPIB Device Control on Raspberry Pi.
 
 
 # Epics Server 
-1. Epics Base works on Raspberry Pi.
 
-2. To do: 
+https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
+
+## Epics Base 
+
+## Epics Support 
+
+### To do: 
 
    Read Epics Streamdevice and Asyn documentation and find how they work. 
    
