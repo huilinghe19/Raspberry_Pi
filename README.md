@@ -66,4 +66,5 @@ in Configure file:
 change LINUX_GPIB=0 as LINUX_GPIB=YES
 
 Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
+The boardindex must the same as the Interface board index in the gpib.conf file.
 
