@@ -40,16 +40,16 @@ Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link.
       
 # Epics Server 
 
-base <https://epics-controls.org/resources-and-support/base/>
-asyn <https://github.com/epics-modules/asyn>
-base <https://epics-controls.org/resources-and-support/base/>
-asyn <https://github.com/epics-modules/asyn>
+
+
 https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
 
 ## Epics Base 
+base <https://epics-controls.org/resources-and-support/base/>
 
 ## Epics Support 
-
+asyn <https://github.com/epics-modules/asyn>
+streamDevice https://github.com/paulscherrerinstitute/StreamDevice
 ### To do: 
 
    Epics Streamdevice and Asyn for GPIB
