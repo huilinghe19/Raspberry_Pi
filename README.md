@@ -43,6 +43,9 @@ https://github.com/elektronomikon/raspi_gpib_driver
       
 # Epics Server 
 
+base <https://epics-controls.org/resources-and-support/base/>
+asyn <https://github.com/epics-modules/asyn>
+
 https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
 
 ## Epics Base 
