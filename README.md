@@ -40,8 +40,6 @@ Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link.
       
 # Epics Server 
 
-
-
 https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
 
 ## Epics Base 
@@ -49,16 +47,15 @@ base <https://epics-controls.org/resources-and-support/base/>
 
 ## Epics Support 
 asyn <https://github.com/epics-modules/asyn>
-streamDevice https://github.com/paulscherrerinstitute/StreamDevice
-### To do: 
 
-   Epics Streamdevice and Asyn for GPIB
+StreamDevice https://github.com/paulscherrerinstitute/StreamDevice
+
+### To do:  Epics Streamdevice and Asyn for GPIB
    
    https://www.esrf.eu/files/live/sites/www/files/events/conferences/2011/ESRFUP-WP10-beamline-instrumentation-software/WP10-DIAMOND-AsynDriverEPICS.pdf
    
    https://www.slac.stanford.edu/grp/ssrl/spear/epics/site/asyn/devGpib.html
-   
-   https://paulscherrerinstitute.github.io/StreamDevice/
+https://github.com/paulscherrerinstitute/StreamDevice
       
 ### Connection 
 in Configure file:
