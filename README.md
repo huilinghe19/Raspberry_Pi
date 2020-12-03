@@ -47,13 +47,11 @@ https://github.com/elektronomikon/raspi_gpib_driver
        
 2. After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
        
-       >>> ibterm -b19
-       >>> Error
-       >>> sudo nano gpib.config
-       >>> ??????
+       >>> ibterm -b 19 -N
+       (Enter 2 times)
+       
        
 3. python 3 test:
-
        >>> from gpib_ctypes import gpib
        >>> device = gpib.dev(0,19)
        >>> gpib.write(device, b’*IDN?’)
@@ -66,12 +64,3 @@ change LINUX_GPIB=0 as LINUX_GPIB=YES
 
 Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 
-$ sudo modprobe gpib_common
-
-$ sudo modprobe gpib_bitbang
-
-$ sudo gpib_config
-
-./gpib_config
-
-ibterm -d19
