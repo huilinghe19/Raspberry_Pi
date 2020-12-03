@@ -32,6 +32,7 @@ Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link.
        
        
 3. python 3 test:
+
        >>> from gpib_ctypes import gpib
        >>> device = gpib.dev(0,19)
        >>> gpib.write(device, b’*IDN?’)
