@@ -1,14 +1,19 @@
 # Aim
-Writing a Epics Server to connect GPIB Devices on Raspberry Platform 
+Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform 
 
-# Raspberry_Pi
-Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices(to be proved!!!). Now our aim is to connect the Raspberry Pi with Epics IOC for GPIB Device Control.
+# Raspberry Pi
+Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Now our aim is to write Epics Server for GPIB Device Control on Raspberry Pi.
 
 
 # Epics Server 
-1. Epics Base works on Raspberry Pi (using Jördis's Dokumentation).
 
-2. To do: 
+https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
+
+## Epics Base 
+
+## Epics Support 
+
+### To do: 
 
    Read Epics Streamdevice and Asyn documentation and find how they work. 
    
@@ -19,7 +24,11 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
    https://paulscherrerinstitute.github.io/StreamDevice/
    
 # GPIB Device support
-1. Test how GPIB works. It does not work with Keithley 2000. When I use Python to test the GPIB function, "No package gpib_ctypes is installed. ". The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the 4.2.0 Version. Information link: https://github.com/elektronomikon/raspi_gpib_driver
+1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the newest 4.3.0 Version. 
+
+Information link:
+https://sourceforge.net/projects/linux-gpib/files/
+https://github.com/elektronomikon/raspi_gpib_driver
 
       Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link. Version 4.2.0 is installed. The source code is unten ~/Downloads/HHL/
 
@@ -32,14 +41,24 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
        >>> tar xzf linux-gpib-kernel-4.2.0.tar.gz
        >>> cd linux-gpib-kernel-4.2.0
        >>> ./configure
+       -----patch-----
+       >>> make 
+       >>> sudo make install
        
-2. After installing linux-gpib and raspi patch packages(make install has been done). There is something wrong in GPIB configuration file. GPIB has not been configured in Raspberry. What is the address of the GPIB device? 
+2. After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
        
        >>> ibterm -b19
        >>> Error
        >>> sudo nano gpib.config
        >>> ??????
-            
+       
+3. python 3 test:
+
+       >>> from gpib_ctypes import gpib
+       >>> device = gpib.dev(0,19)
+       >>> gpib.write(device, b’*IDN?’)
+       >>> gpib.read(device, 100)
+      
 # Connection 
 in Configure file:
 
@@ -48,7 +67,9 @@ change LINUX_GPIB=0 as LINUX_GPIB=YES
 Add command: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 
 $ sudo modprobe gpib_common
+
 $ sudo modprobe gpib_bitbang
+
 $ sudo gpib_config
 
 ./gpib_config
