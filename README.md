@@ -5,23 +5,7 @@ Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform
 Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Now our aim is to write Epics Server for GPIB Device Control on Raspberry Pi.
 
 
-# Epics Server 
 
-https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
-
-## Epics Base 
-
-## Epics Support 
-
-### To do: 
-
-   Read Epics Streamdevice and Asyn documentation and find how they work. 
-   
-   https://www.esrf.eu/files/live/sites/www/files/events/conferences/2011/ESRFUP-WP10-beamline-instrumentation-software/WP10-DIAMOND-AsynDriverEPICS.pdf
-   
-   https://www.slac.stanford.edu/grp/ssrl/spear/epics/site/asyn/devGpib.html
-   
-   https://paulscherrerinstitute.github.io/StreamDevice/
    
 # GPIB Device support
 1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. So I decide to install the newest 4.3.0 Version. 
@@ -57,7 +41,25 @@ https://github.com/elektronomikon/raspi_gpib_driver
        >>> gpib.write(device, b’*IDN?’)
        >>> gpib.read(device, 100)
       
-# Connection 
+# Epics Server 
+
+https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
+
+## Epics Base 
+
+## Epics Support 
+
+### To do: 
+
+   Epics Streamdevice and Asyn for GPIB
+   
+   https://www.esrf.eu/files/live/sites/www/files/events/conferences/2011/ESRFUP-WP10-beamline-instrumentation-software/WP10-DIAMOND-AsynDriverEPICS.pdf
+   
+   https://www.slac.stanford.edu/grp/ssrl/spear/epics/site/asyn/devGpib.html
+   
+   https://paulscherrerinstitute.github.io/StreamDevice/
+      
+### Connection 
 in Configure file:
 
 change LINUX_GPIB=0 as LINUX_GPIB=YES
