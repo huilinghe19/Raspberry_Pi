@@ -1,0 +1,31 @@
+record (ai, "$(P)currentStep")
+     {
+             field (SCAN, "Passive")
+             field (DTYP, "stream")
+             field (INP,  "@yourdev.proto getCurrentStep $(PORT) $(ADDR)")
+     }
+
+record (ao, "$(P)setCurrentStep")
+     {
+             field (SCAN, "Passive")
+             field (DTYP, "stream")
+             field (OUT,  "@yourdev.proto setCurrentStep $(PORT) $(ADDR)")
+     }
+
+
+
+record (ai, "$(P)getdata")
+     {
+             field (SCAN, "Passive")
+             field (DTYP, "stream")
+             field (INP,  "@yourdev.proto getdata $(PORT) $(ADDR)")
+     }
+
+record (stringin, "$(P)getIDN")
+     {
+             field (SCAN, "Passive")
+             field (DTYP, "stream")
+             field (INP,  "@yourdev.proto getIDN $(PORT) $(ADDR)")
+     }
+
+
