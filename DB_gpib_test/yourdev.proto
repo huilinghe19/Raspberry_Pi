@@ -1,31 +1,25 @@
-
 Terminator = CR LF;
 
 LockTimeout = 5000;
 WriteTimeout = 100;
 ReplyTimeout = 3000;
 ReadTimeout = 1000;
+ExtraInput = Ignore;
 #InTerminator = "\r";
 #OutTerminator = "\r";
 
 getIDN {
-                out "*IDN?";
-                in "%f";
+	out "*IDN?";
+	wait 20;
+	in "%s[^\r\n]";
+	wait 20;
 }
 
-
-getCurrentStep {
-		out ":VOLT:DC?";
-		in "%f";
-}
-setCurrentStep {
-
-		out ":VOLT:DC %f";
-
-}
 
 
 getdata {
-                out ":DATA?";
-                in "%f";
+	out "data?";
+	wait 20;
+	in "%f";
+	wait 20;
 }
