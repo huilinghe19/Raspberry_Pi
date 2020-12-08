@@ -64,7 +64,14 @@ https://github.com/paulscherrerinstitute/StreamDevice
 https://github.com/paulscherrerinstitute/StreamDevice
       
 ### Connection 
-in Configure file:
+
+https://epics-controls.org/resources-and-support/documents/howto-documents/gpib-ports-linux-streamdevice/#STEP_3_Create_a_protocol_file
+
+Changes in bashrc file: 
+https://prjemian.github.io/epicspi/
+
+
+Change in Configure file:
 
 change LINUX_GPIB=0 as LINUX_GPIB=YES
 
