@@ -1,4 +1,4 @@
-# Epics Server on Raspberry Pi
+# Epics Server for GPIB on Raspberry Pi
 
 ## Aim
 Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform 
