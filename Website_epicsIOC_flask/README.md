@@ -1,6 +1,9 @@
 # Webserver on Raspberry Pi (GPIB and EPICS SERVER INSTALLED)
+I habe used just a index.html file. The original html comes from jördis index.html. But I have deleted all other things except a button and a block to show some sentences. css js bootstrap things of format are also not included.
 
-## open a website
+In flask_server.py, the original link / is still there. The button has no effect.  I have added another link /openKeithley2000IOC to show how to open IOC.  
+
+## open webserver with PYTHON scripts
 
 >>> python3 flask_server.py
 
