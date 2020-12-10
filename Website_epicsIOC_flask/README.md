@@ -1,7 +1,6 @@
-# Webserver 
+# Webserver on Raspberry Pi (GPIB and EPICS SERVER INSTALLED)
 
-## epics IOC in the flask server finished.
-
+## epics IOC from a website
 >>> python3 flask_server.py
 
 There are 3 websites:
