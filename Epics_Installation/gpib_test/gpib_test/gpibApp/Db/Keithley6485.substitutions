@@ -1,0 +1,10 @@
+file Keithley6485Main.template {
+pattern { PROTO }
+    { Keithley6485.proto }
+}
+
+file SCPI.template {
+pattern { PROTO }
+    { Keithley6485.proto }
+}
+

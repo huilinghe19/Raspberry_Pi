@@ -1,0 +1,25 @@
+Terminator = CR LF;
+
+LockTimeout = 5000;
+WriteTimeout = 100;
+ReplyTimeout = 3000;
+ReadTimeout = 1000;
+ExtraInput = Ignore;
+#InTerminator = "\r";
+#OutTerminator = "\r";
+
+getIDN {
+	out "*IDN?";
+	wait 20;
+	in "%s[^\r\n]";
+	wait 20;
+}
+
+
+
+getdata {
+	out "data?";
+	wait 20;
+	in "%f";
+	wait 20;
+}

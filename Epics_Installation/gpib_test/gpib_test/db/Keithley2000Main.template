@@ -1,0 +1,72 @@
+##########################################################################
+# Copyright (c) 2011 Lawrence Berkeley National Laboratory, Accelerator
+#                    Technology Group, Engineering Division
+# Copyright (c) 2018 Helmholtz-Zentrum Berlin für Materialien
+#                    und Energie GmbH, Germany (HZB)
+# This code is distributed subject to a Software License Agreement found
+# in file LICENSE that is included with this distribution.
+# NOTE: This is a strongly modified HZB version of the original driver.
+##########################################################################
+
+####
+## INIT
+####
+record (bo, "$(DEVN):init") {
+    field(DESC, "set init parameters")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) init($(DEVN)) $(PORT) -1")
+    field(PINI, "YES")
+    field(FLNK, "$(DEVN):fwdInit.PROC")
+}
+
+record(seq, "$(DEVN):cmdReset") {
+    field(DESC, "reset device")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdRst.PROC")
+    field(LNK2, "$(DEVN):init.PROC")
+}
+
+# Update Readback after Reset
+record(seq, "$(DEVN):fwdInit") {
+    field(DESC, "records to be processed during init")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):fwdMisc.PROC")
+    field(LNK2, "$(DEVN):fwdRangeCur.PROC")
+    field(LNK3, "$(DEVN):fwdFilt.PROC")
+    field(LNK4, "$(DEVN):fwdZero.PROC")
+    field(LNK5, "$(DEVN):fwdArm.PROC")
+    field(LNK6, "$(DEVN):fwdTrig.PROC")
+}
+
+
+#####
+# Measurement
+#####
+
+## Reading
+# TRIG:COUN is 1 => we only expect one value at a time
+record(ai, "$(DEVN):rdCur") {
+    field(DESC, "Measure current")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "16")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+# use this if TRIG:COUN > 1
+#record(waveform, "$(DEVN):rdCur2") {
+#    field(DESC, "Measure current")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) read2() $(PORT) -1")
+#    field(FTVL, "FLOAT")
+#    field(NELM, "2500")
+#    field(EGU,  "A")
+#    field(PREC, "16")
+#    field(DISV, "1")
+#    field(SDIS, "$(DEVN):disable CA")
+#    field(DISS, "INVALID")
+#}
+

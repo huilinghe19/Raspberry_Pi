@@ -1,0 +1,16 @@
+
+record (ao, "$(P)value")
+     {
+             field (SCAN, "5")
+             field (DTYP, "stream")
+             field (OUT,  "@yourdev.proto getdata $(PORT) $(ADDR)")
+     }
+
+record (stringout, "$(P)getIDN")
+     {
+             field (SCAN, "Passive")
+             field (DTYP, "stream")
+             field (OUT,  "@yourdev.proto getIDN $(PORT) $(ADDR)")
+     }
+
+

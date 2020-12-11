@@ -1,0 +1,3082 @@
+##########################################################################
+# Copyright (c) 2011 Lawrence Berkeley National Laboratory, Accelerator
+#                    Technology Group, Engineering Division
+# Copyright (c) 2018 Helmholtz-Zentrum Berlin für Materialien
+#                    und Energie GmbH, Germany (HZB)
+# This code is distributed subject to a Software License Agreement found
+# in file LICENSE that is included with this distribution.
+# NOTE: This is a strongly modified HZB version of the original driver.
+##########################################################################
+
+####
+## INIT
+####
+record (bo, "$(DEVN):init") {
+    field(DESC, "set init parameters")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) init($(DEVN)) $(PORT) -1")
+    field(PINI, "YES")
+    field(FLNK, "$(DEVN):fwdInit.PROC")
+}
+
+record(seq, "$(DEVN):cmdReset") {
+    field(DESC, "reset device")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdRst.PROC")
+    field(LNK2, "$(DEVN):init.PROC")
+}
+
+# Update Readback after Reset
+record(seq, "$(DEVN):fwdInit") {
+    field(DESC, "records to be processed during init")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):fwdMisc.PROC")
+    field(LNK2, "$(DEVN):fwdRangeCur.PROC")
+    field(LNK3, "$(DEVN):fwdFilt.PROC")
+    field(LNK4, "$(DEVN):fwdZero.PROC")
+    field(LNK5, "$(DEVN):fwdArm.PROC")
+    field(LNK6, "$(DEVN):fwdTrig.PROC")
+}
+
+record(seq, "$(DEVN):fwdMisc") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):rstTrgConf.PROC")
+    field(LNK2, "$(DEVN):rdMer.PROC")
+    field(LNK3, "$(DEVN):setDispRes.PROC")
+    field(LNK4, "$(DEVN):cmdDisp.PROC")
+    field(LNK5, "$(DEVN):cmdMee.PROC")
+    field(LNK6, "$(DEVN):idn.PROC")
+}
+
+record(seq, "$(DEVN):fwdRangeCur") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setRangeCur.PROC")
+    field(LNK2, "$(DEVN):cmdRangeCurAuto.PROC")
+    field(LNK3, "$(DEVN):setRangeCurAutoLLIM.PROC")
+    field(LNK4, "$(DEVN):setRangeCurAutoULIM.PROC")
+}
+
+record(seq, "$(DEVN):fwdFilt") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdFiltAverEnable.PROC")
+    field(LNK2, "$(DEVN):cmdFiltAverCtrl.PROC")
+    field(LNK3, "$(DEVN):setFiltAverCnt.PROC")
+    field(LNK4, "$(DEVN):cmdFiltMedEnable.PROC")
+    field(LNK5, "$(DEVN):setFiltMedRnk.PROC")
+    field(LNK6, "$(DEVN):setIntegrTime.PROC")
+    field(LNK7, "$(DEVN):setFiltDampEnable.PROC")
+}
+
+record(seq, "$(DEVN):fwdZero") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdAutoZero.PROC")
+    field(LNK2, "$(DEVN):cmdZeroCorrect.PROC")
+    field(LNK3, "$(DEVN):cmdZeroCheck.PROC")
+}
+
+record(seq, "$(DEVN):fwdArm") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setArmSrc.PROC")
+    field(LNK2, "$(DEVN):setArmLine.PROC")
+    field(LNK3, "$(DEVN):setArmTimerInterval.PROC")
+#    field(LNK4, "$(DEVN):setArmCnt.PROC")
+}
+
+record(seq, "$(DEVN):fwdTrig") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setTrgSrc.PROC")
+    field(LNK2, "$(DEVN):setTrgInLine.PROC")
+    field(LNK3, "$(DEVN):setTrgOutLine.PROC")
+    field(LNK4, "$(DEVN):setTrgOut.PROC")
+    field(LNK5, "$(DEVN):setTrgDly.PROC")
+    field(LNK6, "$(DEVN):setTrgDlyAuto.PROC")
+#    field(LNK7, "$(DEVN):setTrgCnt.PROC")
+}
+
+####
+## SCAN ROUTINE
+####
+# cyclic scanning of keithley
+record (seq, "$(DEVN):fwdUpd") {
+    field(DESC, "scan routine")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):rdCur.PROC")
+    field(LNK2, "$(DEVN):rdStb.PROC")
+    field(LNK3, "$(DEVN):rdEsr.PROC")
+    field(SCAN, "1 second")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(FLNK, "$(DEVN):chkStatus.PROC")
+}
+
+record (seq, "$(DEVN):chkStatus") {
+    field(DESC, "check status register")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):chkMer.PROC")
+    field(LNK2, "$(DEVN):chkErrMsg.PROC")
+    field(LNK3, "$(DEVN):chkPon.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# check MER if bit 0 in STB set
+record (calcout, "$(DEVN):chkMer") {
+    field(DESC, "check for new MER reg value")
+    field(INPA, "$(DEVN):rdStb.B0 NPP")
+    field(OOPT, "When Non-zero")
+    field(CALC, "A")
+    field(OUT, "$(DEVN):rdMer.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# check Power on
+record (calcout, "$(DEVN):chkPon") {
+    field(DESC, "init device after power on")
+    field(INPA, "$(DEVN):rdEsr.B7 NPP")
+    field(OOPT, "When Non-zero")
+    field(CALC, "A")
+    field(OUT, "$(DEVN):init.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# Status
+record (mbbiDirect, "$(DEVN):rdMer"){
+    field(DESC, "Measurement Event Registers")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getDec(STAT:MEAS:EVEN) $(PORT) -1")
+}
+
+# enable Measurement Event Registers
+record(mbboDirect, "$(DEVN):cmdMee") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "enable Measurement Event Registers")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(STAT:MEAS:ENAB) $(PORT) -1")
+    field(VAL,  "1152")
+    field(FLNK, "$(DEVN):rbkMee")
+}
+
+record(mbbiDirect, "$(DEVN):rbkMee") {
+    field(DESC, "enable Measurement Event Registers")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(STAT:MEAS:ENAB) $(PORT) -1")
+}
+
+####
+# Display
+####
+record(bo, "$(DEVN):cmdDisp") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "SCPI Display ON/OFF")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(DISP:ENAB) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkDisp")
+}
+record(bi, "$(DEVN):rbkDisp") {
+    field(DESC, "Display ON/OFF Status")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(DISP:ENAB) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+record (mbbo, "$(DEVN):setDispRes") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set display resolution")
+    field(OUT, "@$(PROTO) setDec(DISP:DIG) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL,"4")
+    field(ONVL,"5")
+    field(TWVL,"6")
+    field(THVL,"7")
+    field(ZRST,"4 Digits")
+    field(ONST,"5 Digits")
+    field(TWST,"6 Digits")
+    field(THST,"7 Digits")
+    field(VAL, "3")
+    field(FLNK, "$(DEVN):rbkDispRes")
+}
+
+record (mbbi, "$(DEVN):rbkDispRes") {
+    field(DESC, "display resolution")
+    field(INP, "@$(PROTO) getDec(DISP:DIG) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL,"4")
+    field(ONVL,"5")
+    field(TWVL,"6")
+    field(THVL,"7")
+    field(ZRST,"4 Digits")
+    field(ONST,"5 Digits")
+    field(TWST,"6 Digits")
+    field(THST,"7 Digits")
+}
+
+#####
+# Measurement
+#####
+
+## Reading
+# TRIG:COUN is 1 => we only expect one value at a time
+record(ai, "$(DEVN):rdCur") {
+    field(DESC, "Measure current")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "16")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+# use this if TRIG:COUN > 1
+#record(waveform, "$(DEVN):rdCur2") {
+#    field(DESC, "Measure current")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) read2() $(PORT) -1")
+#    field(FTVL, "FLOAT")
+#    field(NELM, "2500")
+#    field(EGU,  "A")
+#    field(PREC, "16")
+#    field(DISV, "1")
+#    field(SDIS, "$(DEVN):disable CA")
+#    field(DISS, "INVALID")
+#}
+
+## Range
+# current range
+record(mbbo, "$(DEVN):setRangeCur") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "current scale range")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "5")
+    field(FLNK, "$(DEVN):rbkRangeCur")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCur") {
+    field(DESC, "current scale range readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+record(bo, "$(DEVN):cmdRangeCurAuto") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable auto-range")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(CURR:RANG:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+    field(FLNK, "$(DEVN):rbkRangeCurAuto")
+}
+
+record(bi, "$(DEVN):rbkRangeCurAuto") {
+    field(DESC, "Disable/Enable auto-range")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SENS:CURR:RANG:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+}
+
+record(mbbo, "$(DEVN):setRangeCurAutoLLIM") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "auto range lower limit")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG:AUTO:LLIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkRangeCurAutoLLIM")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCurAutoLLIM") {
+    field(DESC, "auto range lower limit readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG:AUTO:LLIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+record(mbbo, "$(DEVN):setRangeCurAutoULIM") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "auto range upper limit")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG:AUTO:ULIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "7")
+    field(FLNK, "$(DEVN):rbkRangeCurAutoULIM")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCurAutoULIM") {
+    field(DESC, "auto range upper limit readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG:AUTO:ULIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+## Integration time in PowerLineCycles
+# default 5.0 for 50Hz where one cycle is 20msec
+# default 6.0 for 60Hz where one cycle is 16.67msec
+record(ao, "$(DEVN):setIntegrTime") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Reading integration time")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(CURR:NPLC) $(PORT) -1")
+    field(EGU,  "Cycles")
+    field(PREC, "2")
+    field(LOPR, "0")
+    field(HOPR, "60")
+    field(DRVL, "0.01")
+    field(DRVH, "60")
+    field(VAL,  "5")
+    field(FLNK, "$(DEVN):rbkIntegrTime")
+}
+record(ai, "$(DEVN):rbkIntegrTime") {
+    field(DESC, "Reading integration time")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(CURR:NPLC) $(PORT) -1")
+    field(EGU,  "Cycles")
+    field(PREC, "2")
+    field(LOPR, "0")
+    field(HOPR, "60")
+}
+
+
+####
+# Filter
+####
+
+## Median Filter
+record (mbbo, "$(DEVN):setFiltMedRnk") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set Rank, sample Readings = (2 x R) + 1")
+    field(OUT, "@$(PROTO) setDec(MED:RANK) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "3")
+    field(THVL, "4")
+    field(FRVL, "5")
+    field(ZRST, "1")
+    field(ONST, "2")
+    field(TWST, "3")
+    field(THST, "4")
+    field(FRST, "5")
+    field(FLNK, "$(DEVN):rbkFiltMedRnk")
+}
+
+record (mbbi, "$(DEVN):rbkFiltMedRnk") {
+    field(DESC, "rbk Rank, sample Readings = (2 x R) + 1")
+    field(DTYP, "stream")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "3")
+    field(THVL, "4")
+    field(FRVL, "5")
+    field(ZRST, "1")
+    field(ONST, "2")
+    field(TWST, "3")
+    field(THST, "4")
+    field(FRST, "5")
+    field(INP, "@$(PROTO) getDec(MED:RANK) $(PORT) -1")
+}
+
+record(bo, "$(DEVN):cmdFiltMedEnable") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(MED) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+    field(FLNK, "$(DEVN):rbkFiltMedEnable")
+}
+
+record(bi, "$(DEVN):rbkFiltMedEnable") {
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(MED) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+## Digital Filter (Average)
+record(longout, "$(DEVN):setFiltAverCnt") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Number of samples in reading")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(AVER:COUN) $(PORT) -1")
+    field(EGU,  "Samples")
+    field(LOPR, "2")
+    field(HOPR, "100")
+    field(DRVL, "2")
+    field(DRVH, "100")
+    field(VAL,  "2")
+    field(FLNK, "$(DEVN):rbkFiltAverCnt")
+}
+
+record(longin, "$(DEVN):rbkFiltAverCnt") {
+    field(DESC, "Number of samples in reading")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(AVER:COUN) $(PORT) -1")
+    field(EGU,  "Samples")
+    field(LOPR, "2")
+    field(HOPR, "100")
+}
+
+record(bo, "$(DEVN):cmdFiltAverEnable") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(AVER) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+    field(FLNK, "$(DEVN):rbkFiltAverEnable")
+}
+
+record(bi, "$(DEVN):rbkFiltAverEnable") {
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(AVER) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+record(bo, "$(DEVN):cmdFiltAverCtrl") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set filter control, Moving or Repeat")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setStr(AVER:TCON) $(PORT) -1")
+    field(ZNAM, "Moving")
+    field(ONAM, "Repeat")
+    field(FLNK, "$(DEVN):rbkFiltAverCtrl")
+}
+
+record(bi, "$(DEVN):rbkFiltAverCtrl") {
+    field(DESC, "filter control, MOVing or REPeat")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getStr(AVER:TCON) $(PORT) -1")
+    field(ZNAM, "MOV")
+    field(ONAM, "REP")
+}
+
+####
+# ARM
+####
+# BUS not supported by READ? command
+record(mbbo, "$(DEVN):setArmSrc") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Arm source")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setArmSour $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "GPIB/Serial")
+    field(TWVL, "2")
+    field(TWST, "Timer")
+    field(THVL, "3")
+    field(THST, "Manual")
+    field(FRVL, "4")
+    field(FRST, "Trigger Link")
+    field(FLNK, "$(DEVN):rbkArmSrc")
+}
+
+record(mbbi, "$(DEVN):rbkArmSrc") {
+    field(DESC, "Arm source readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getArmSour $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "GPIB/Serial")
+    field(TWVL, "2")
+    field(TWST, "Timer")
+    field(THVL, "3")
+    field(THST, "Manual")
+    field(FRVL, "4")
+    field(FRST, "Trigger Link")
+}
+
+record(mbbo, "$(DEVN):setArmLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK arm line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(ARM:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkArmLine")
+}
+
+record(mbbi, "$(DEVN):rbkArmLine") {
+    field(DESC, "TLINK arm line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(ARM:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(ao, "$(DEVN):setArmTimerInterval") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Arm timer interval")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(ARM:TIM) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1e5")
+    field(DRVL, "0.001")
+    field(DRVH, "99999.999")
+    field(FLNK, "$(DEVN):rbkArmTimerInterval")
+}
+
+record(ai, "$(DEVN):rbkArmTimerInterval") {
+    field(DESC, "Arm timer interval")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(ARM:TIM) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1e5")
+}
+
+# number of measurements, slow at higher values!
+#record(longout, "$(DEVN):setArmCnt") {
+#    info("autosaveFields_pass0", "VAL")
+#    field(DESC, "Arm count")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) setDec(ARM:COUN) $(PORT) -1")
+#    field(DOL,  "1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#    field(DRVL, "1")
+#    field(DRVH, "2048")
+#    field(FLNK, "$(DEVN):rbkArmCnt")
+#}
+
+#record(longin, "$(DEVN):rbkArmCnt") {
+#    field(DESC, "Arm count")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) getDec(ARM:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#}
+
+####
+# TRIGGER
+####
+
+record(mbbo, "$(DEVN):setTrgSrc") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Trigger source")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setTrigSour() $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "Trigger Link")
+    field(FLNK, "$(DEVN):rbkTrgSrc")
+}
+
+record(mbbi, "$(DEVN):rbkTrgSrc") {
+    field(DESC, "Trigger source readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getTrigSour() $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "Trigger Link")
+}
+
+record(mbbo, "$(DEVN):setTrgInLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK trigger input line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkTrgInLine")
+}
+
+record(mbbi, "$(DEVN):rbkTrgInLine") {
+    field(DESC, "TLINK trigger input line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(mbbo, "$(DEVN):setTrgOutLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK trigger output line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:OLIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkTrgOutLine")
+}
+
+record(mbbi, "$(DEVN):rbkTrgOutLine") {
+    field(DESC, "TLINK trigger output line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:OLIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(bo, "$(DEVN):setTrgOut") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable trigger output")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setTrigOut() $(PORT) -1")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(DEVN):rbkTrgOut")
+}
+
+record(bi, "$(DEVN):rbkTrgOut") {
+    field(DESC, "Disable/Enable trigger output")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getTrigOut() $(PORT) -1")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(ao, "$(DEVN):setTrgDly") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Trigger Delay")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(TRIG:DEL) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1000")
+    field(DRVL, "0")
+    field(DRVH, "999.9998")
+    field(FLNK, "$(DEVN):rbkTrgDly")
+}
+
+record(ai, "$(DEVN):rbkTrgDly") {
+    field(DESC, "Trigger Delay")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(TRIG:DEL) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1000")
+}
+
+record(bo, "$(DEVN):setTrgDlyAuto") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable trigger autodelay")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:DEL:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+    field(FLNK, "$(DEVN):rbkTrgDlyAuto")
+}
+
+record(bi, "$(DEVN):rbkTrgDlyAuto") {
+    field(DESC, "Disable/Enable trigger autodelay")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:DEL:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+}
+
+# number of measurements, slow at higher values!
+#record(longout, "$(DEVN):setTrgCnt") {
+#    info("autosaveFields_pass0", "VAL")
+#    field(DESC, "Trigger count")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) setDec(TRIG:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2500")
+#    field(DRVL, "1")
+#    field(DRVH, "2500")
+#    field(FLNK, "$(DEVN):rbkTrgCnt")
+#}
+#record(longin, "$(DEVN):rbkTrgCnt") {
+#    field(DESC, "Trigger count")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) getDec(TRIG:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#}
+
+record(bo, "$(DEVN):cmdStart") {
+    field(DESC, "SCPI Reset")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(INIT) $(PORT) -1")
+}
+
+record(bo, "$(DEVN):cmdCancel") {
+    field(DESC, "Cancel trigger sequence")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(ABOR) $(PORT) -1")
+}
+
+#####
+## Calibration
+#####
+# null input amplifier offsetStr, put shiedling cap on Input jack before use!
+#record(bo, "$(DEVN):calibAmplOFS") {
+#    field(DESC, "null input amplifier offsetStr")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) cmd(CAL:UNPR:VOFF) $(PORT) -1")
+#}
+
+## Zero-check
+record(bo, "$(DEVN):cmdZeroCheck") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable zero check (input clamp)")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:ZCH:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkZeroCheck")
+    field(VAL, "0")
+}
+record(bi, "$(DEVN):rbkZeroCheck") {
+    field(DESC, "zero check (input clamp)")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:ZCH:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+## Auto-Zero
+record(bo, "$(DEVN):cmdAutoZero") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable auto Zero")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:AZER) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkAutoZero")
+}
+record(bi, "$(DEVN):rbkAutoZero") {
+    field(DESC, "auto Zero")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:AZER) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+## Zero-Correct
+record(bo, "$(DEVN):cmdZeroCorrect") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable zero correct")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:ZCOR:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkZeroCorrect")
+}
+record(bi, "$(DEVN):rbkZeroCorrect") {
+    field(DESC, "zero correct")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:ZCOR:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+#Use last reading taken as zero correct value.
+record(bo, "$(DEVN):startZeroCorrectAcq") {
+    field(DESC, "take reading and use it as ZCOR Val")
+    field(FLNK, "$(DEVN):rdZeroCorrectVal")
+}
+record(ai, "$(DEVN):rdZeroCorrectVal") {
+    field(DESC, "take reading for ZCOR")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "5")
+    field(FLNK, "$(DEVN):cmdZeroCorrectAcq")
+}
+record(bo, "$(DEVN):cmdZeroCorrectAcq") {
+    field(DESC, "set reading as ZCOR Val")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(SYST:ZCOR:ACQ) $(PORT) -1")
+}
+
+#####
+# ARCHIVE
+#####
+
+# archiver tool has problems with to many decimal places,
+# thus we implement mA, uA and nA calculation
+record(calc, "$(DEVN):rdCurE3") {
+    field(DESC, "Measure current in mA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "mA")
+    field(CALC, "A*10^3")
+    field(PREC, "13")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+record(calc, "$(DEVN):rdCurE6") {
+    field(DESC, "Measure current in uA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "uA")
+    field(CALC, "A*10^6")
+    field(PREC, "10")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+record(calc, "$(DEVN):rdCurE9") {
+    field(DESC, "Measure current in nA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "nA")
+    field(CALC, "A*10^9")
+    field(PREC, "7")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+#####
+# DEBUGING
+#####
+# send arbitrary commands to device
+# trigger readback
+record(stringout, "$(DEVN):debug:cmdStr") {
+    field(DESC, "debug interface to send test commands")
+    field(DTYP, "stream")
+    field(OUT, "@$(PROTO) debugCmd $(PORT) -1")
+    field(FLNK, "$(DEVN):debug:rbkStr.PROC")
+}
+
+# readback (if any) from debug cmd
+# trigger readout of potential caused system errors
+record(waveform, "$(DEVN):debug:rbkStr") {
+    field(DESC, "Debug Readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) debugRbk $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "2048")
+#    field(FLNK, "$(DEVN):debug:rdMsg.PROC")
+}
+
+# read errors
+record(waveform, "$(DEVN):debug:rdErrMsg") {
+    field(DESC, "Last System Errors")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getStr(SYST:ERR:ALL) $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "120")
+}
+##########################################################################
+# Copyright (c) 2011 Lawrence Berkeley National Laboratory, Accelerator
+#                    Technology Group, Engineering Division
+# Copyright (c) 2018 Helmholtz-Zentrum Berlin für Materialien
+#                    und Energie GmbH, Germany (HZB)
+# This code is distributed subject to a Software License Agreement found
+# in file LICENSE that is included with this distribution.
+# NOTE: This is a strongly modified HZB version of the original driver.
+##########################################################################
+
+####
+## INIT
+####
+record (bo, "$(DEVN):init") {
+    field(DESC, "set init parameters")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) init($(DEVN)) $(PORT) -1")
+    field(PINI, "YES")
+    field(FLNK, "$(DEVN):fwdInit.PROC")
+}
+
+record(seq, "$(DEVN):cmdReset") {
+    field(DESC, "reset device")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdRst.PROC")
+    field(LNK2, "$(DEVN):init.PROC")
+}
+
+# Update Readback after Reset
+record(seq, "$(DEVN):fwdInit") {
+    field(DESC, "records to be processed during init")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):fwdMisc.PROC")
+    field(LNK2, "$(DEVN):fwdRangeCur.PROC")
+    field(LNK3, "$(DEVN):fwdFilt.PROC")
+    field(LNK4, "$(DEVN):fwdZero.PROC")
+    field(LNK5, "$(DEVN):fwdArm.PROC")
+    field(LNK6, "$(DEVN):fwdTrig.PROC")
+}
+
+record(seq, "$(DEVN):fwdMisc") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):rstTrgConf.PROC")
+    field(LNK2, "$(DEVN):rdMer.PROC")
+    field(LNK3, "$(DEVN):setDispRes.PROC")
+    field(LNK4, "$(DEVN):cmdDisp.PROC")
+    field(LNK5, "$(DEVN):cmdMee.PROC")
+    field(LNK6, "$(DEVN):idn.PROC")
+}
+
+record(seq, "$(DEVN):fwdRangeCur") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setRangeCur.PROC")
+    field(LNK2, "$(DEVN):cmdRangeCurAuto.PROC")
+    field(LNK3, "$(DEVN):setRangeCurAutoLLIM.PROC")
+    field(LNK4, "$(DEVN):setRangeCurAutoULIM.PROC")
+}
+
+record(seq, "$(DEVN):fwdFilt") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdFiltAverEnable.PROC")
+    field(LNK2, "$(DEVN):cmdFiltAverCtrl.PROC")
+    field(LNK3, "$(DEVN):setFiltAverCnt.PROC")
+    field(LNK4, "$(DEVN):cmdFiltMedEnable.PROC")
+    field(LNK5, "$(DEVN):setFiltMedRnk.PROC")
+    field(LNK6, "$(DEVN):setIntegrTime.PROC")
+    field(LNK7, "$(DEVN):setFiltDampEnable.PROC")
+}
+
+record(seq, "$(DEVN):fwdZero") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdAutoZero.PROC")
+    field(LNK2, "$(DEVN):cmdZeroCorrect.PROC")
+    field(LNK3, "$(DEVN):cmdZeroCheck.PROC")
+}
+
+record(seq, "$(DEVN):fwdArm") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setArmSrc.PROC")
+    field(LNK2, "$(DEVN):setArmLine.PROC")
+    field(LNK3, "$(DEVN):setArmTimerInterval.PROC")
+#    field(LNK4, "$(DEVN):setArmCnt.PROC")
+}
+
+record(seq, "$(DEVN):fwdTrig") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setTrgSrc.PROC")
+    field(LNK2, "$(DEVN):setTrgInLine.PROC")
+    field(LNK3, "$(DEVN):setTrgOutLine.PROC")
+    field(LNK4, "$(DEVN):setTrgOut.PROC")
+    field(LNK5, "$(DEVN):setTrgDly.PROC")
+    field(LNK6, "$(DEVN):setTrgDlyAuto.PROC")
+#    field(LNK7, "$(DEVN):setTrgCnt.PROC")
+}
+
+####
+## SCAN ROUTINE
+####
+# cyclic scanning of keithley
+record (seq, "$(DEVN):fwdUpd") {
+    field(DESC, "scan routine")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):rdCur.PROC")
+    field(LNK2, "$(DEVN):rdStb.PROC")
+    field(LNK3, "$(DEVN):rdEsr.PROC")
+    field(SCAN, "1 second")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(FLNK, "$(DEVN):chkStatus.PROC")
+}
+
+record (seq, "$(DEVN):chkStatus") {
+    field(DESC, "check status register")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):chkMer.PROC")
+    field(LNK2, "$(DEVN):chkErrMsg.PROC")
+    field(LNK3, "$(DEVN):chkPon.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# check MER if bit 0 in STB set
+record (calcout, "$(DEVN):chkMer") {
+    field(DESC, "check for new MER reg value")
+    field(INPA, "$(DEVN):rdStb.B0 NPP")
+    field(OOPT, "When Non-zero")
+    field(CALC, "A")
+    field(OUT, "$(DEVN):rdMer.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# check Power on
+record (calcout, "$(DEVN):chkPon") {
+    field(DESC, "init device after power on")
+    field(INPA, "$(DEVN):rdEsr.B7 NPP")
+    field(OOPT, "When Non-zero")
+    field(CALC, "A")
+    field(OUT, "$(DEVN):init.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# Status
+record (mbbiDirect, "$(DEVN):rdMer"){
+    field(DESC, "Measurement Event Registers")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getDec(STAT:MEAS:EVEN) $(PORT) -1")
+}
+
+# enable Measurement Event Registers
+record(mbboDirect, "$(DEVN):cmdMee") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "enable Measurement Event Registers")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(STAT:MEAS:ENAB) $(PORT) -1")
+    field(VAL,  "1152")
+    field(FLNK, "$(DEVN):rbkMee")
+}
+
+record(mbbiDirect, "$(DEVN):rbkMee") {
+    field(DESC, "enable Measurement Event Registers")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(STAT:MEAS:ENAB) $(PORT) -1")
+}
+
+####
+# Display
+####
+record(bo, "$(DEVN):cmdDisp") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "SCPI Display ON/OFF")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(DISP:ENAB) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkDisp")
+}
+record(bi, "$(DEVN):rbkDisp") {
+    field(DESC, "Display ON/OFF Status")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(DISP:ENAB) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+record (mbbo, "$(DEVN):setDispRes") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set display resolution")
+    field(OUT, "@$(PROTO) setDec(DISP:DIG) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL,"4")
+    field(ONVL,"5")
+    field(TWVL,"6")
+    field(THVL,"7")
+    field(ZRST,"4 Digits")
+    field(ONST,"5 Digits")
+    field(TWST,"6 Digits")
+    field(THST,"7 Digits")
+    field(VAL, "3")
+    field(FLNK, "$(DEVN):rbkDispRes")
+}
+
+record (mbbi, "$(DEVN):rbkDispRes") {
+    field(DESC, "display resolution")
+    field(INP, "@$(PROTO) getDec(DISP:DIG) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL,"4")
+    field(ONVL,"5")
+    field(TWVL,"6")
+    field(THVL,"7")
+    field(ZRST,"4 Digits")
+    field(ONST,"5 Digits")
+    field(TWST,"6 Digits")
+    field(THST,"7 Digits")
+}
+
+#####
+# Measurement
+#####
+
+## Reading
+# TRIG:COUN is 1 => we only expect one value at a time
+record(ai, "$(DEVN):rdCur") {
+    field(DESC, "Measure current")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "16")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+# use this if TRIG:COUN > 1
+#record(waveform, "$(DEVN):rdCur2") {
+#    field(DESC, "Measure current")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) read2() $(PORT) -1")
+#    field(FTVL, "FLOAT")
+#    field(NELM, "2500")
+#    field(EGU,  "A")
+#    field(PREC, "16")
+#    field(DISV, "1")
+#    field(SDIS, "$(DEVN):disable CA")
+#    field(DISS, "INVALID")
+#}
+
+## Range
+# current range
+record(mbbo, "$(DEVN):setRangeCur") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "current scale range")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "5")
+    field(FLNK, "$(DEVN):rbkRangeCur")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCur") {
+    field(DESC, "current scale range readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+record(bo, "$(DEVN):cmdRangeCurAuto") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable auto-range")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(CURR:RANG:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+    field(FLNK, "$(DEVN):rbkRangeCurAuto")
+}
+
+record(bi, "$(DEVN):rbkRangeCurAuto") {
+    field(DESC, "Disable/Enable auto-range")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SENS:CURR:RANG:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+}
+
+record(mbbo, "$(DEVN):setRangeCurAutoLLIM") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "auto range lower limit")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG:AUTO:LLIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkRangeCurAutoLLIM")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCurAutoLLIM") {
+    field(DESC, "auto range lower limit readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG:AUTO:LLIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+record(mbbo, "$(DEVN):setRangeCurAutoULIM") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "auto range upper limit")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG:AUTO:ULIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "7")
+    field(FLNK, "$(DEVN):rbkRangeCurAutoULIM")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCurAutoULIM") {
+    field(DESC, "auto range upper limit readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG:AUTO:ULIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+## Integration time in PowerLineCycles
+# default 5.0 for 50Hz where one cycle is 20msec
+# default 6.0 for 60Hz where one cycle is 16.67msec
+record(ao, "$(DEVN):setIntegrTime") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Reading integration time")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(CURR:NPLC) $(PORT) -1")
+    field(EGU,  "Cycles")
+    field(PREC, "2")
+    field(LOPR, "0")
+    field(HOPR, "60")
+    field(DRVL, "0.01")
+    field(DRVH, "60")
+    field(VAL,  "5")
+    field(FLNK, "$(DEVN):rbkIntegrTime")
+}
+record(ai, "$(DEVN):rbkIntegrTime") {
+    field(DESC, "Reading integration time")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(CURR:NPLC) $(PORT) -1")
+    field(EGU,  "Cycles")
+    field(PREC, "2")
+    field(LOPR, "0")
+    field(HOPR, "60")
+}
+
+
+####
+# Filter
+####
+
+## Median Filter
+record (mbbo, "$(DEVN):setFiltMedRnk") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set Rank, sample Readings = (2 x R) + 1")
+    field(OUT, "@$(PROTO) setDec(MED:RANK) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "3")
+    field(THVL, "4")
+    field(FRVL, "5")
+    field(ZRST, "1")
+    field(ONST, "2")
+    field(TWST, "3")
+    field(THST, "4")
+    field(FRST, "5")
+    field(FLNK, "$(DEVN):rbkFiltMedRnk")
+}
+
+record (mbbi, "$(DEVN):rbkFiltMedRnk") {
+    field(DESC, "rbk Rank, sample Readings = (2 x R) + 1")
+    field(DTYP, "stream")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "3")
+    field(THVL, "4")
+    field(FRVL, "5")
+    field(ZRST, "1")
+    field(ONST, "2")
+    field(TWST, "3")
+    field(THST, "4")
+    field(FRST, "5")
+    field(INP, "@$(PROTO) getDec(MED:RANK) $(PORT) -1")
+}
+
+record(bo, "$(DEVN):cmdFiltMedEnable") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(MED) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+    field(FLNK, "$(DEVN):rbkFiltMedEnable")
+}
+
+record(bi, "$(DEVN):rbkFiltMedEnable") {
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(MED) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+## Digital Filter (Average)
+record(longout, "$(DEVN):setFiltAverCnt") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Number of samples in reading")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(AVER:COUN) $(PORT) -1")
+    field(EGU,  "Samples")
+    field(LOPR, "2")
+    field(HOPR, "100")
+    field(DRVL, "2")
+    field(DRVH, "100")
+    field(VAL,  "2")
+    field(FLNK, "$(DEVN):rbkFiltAverCnt")
+}
+
+record(longin, "$(DEVN):rbkFiltAverCnt") {
+    field(DESC, "Number of samples in reading")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(AVER:COUN) $(PORT) -1")
+    field(EGU,  "Samples")
+    field(LOPR, "2")
+    field(HOPR, "100")
+}
+
+record(bo, "$(DEVN):cmdFiltAverEnable") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(AVER) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+    field(FLNK, "$(DEVN):rbkFiltAverEnable")
+}
+
+record(bi, "$(DEVN):rbkFiltAverEnable") {
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(AVER) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+record(bo, "$(DEVN):cmdFiltAverCtrl") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set filter control, Moving or Repeat")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setStr(AVER:TCON) $(PORT) -1")
+    field(ZNAM, "Moving")
+    field(ONAM, "Repeat")
+    field(FLNK, "$(DEVN):rbkFiltAverCtrl")
+}
+
+record(bi, "$(DEVN):rbkFiltAverCtrl") {
+    field(DESC, "filter control, MOVing or REPeat")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getStr(AVER:TCON) $(PORT) -1")
+    field(ZNAM, "MOV")
+    field(ONAM, "REP")
+}
+
+####
+# ARM
+####
+# BUS not supported by READ? command
+record(mbbo, "$(DEVN):setArmSrc") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Arm source")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setArmSour $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "GPIB/Serial")
+    field(TWVL, "2")
+    field(TWST, "Timer")
+    field(THVL, "3")
+    field(THST, "Manual")
+    field(FRVL, "4")
+    field(FRST, "Trigger Link")
+    field(FLNK, "$(DEVN):rbkArmSrc")
+}
+
+record(mbbi, "$(DEVN):rbkArmSrc") {
+    field(DESC, "Arm source readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getArmSour $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "GPIB/Serial")
+    field(TWVL, "2")
+    field(TWST, "Timer")
+    field(THVL, "3")
+    field(THST, "Manual")
+    field(FRVL, "4")
+    field(FRST, "Trigger Link")
+}
+
+record(mbbo, "$(DEVN):setArmLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK arm line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(ARM:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkArmLine")
+}
+
+record(mbbi, "$(DEVN):rbkArmLine") {
+    field(DESC, "TLINK arm line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(ARM:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(ao, "$(DEVN):setArmTimerInterval") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Arm timer interval")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(ARM:TIM) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1e5")
+    field(DRVL, "0.001")
+    field(DRVH, "99999.999")
+    field(FLNK, "$(DEVN):rbkArmTimerInterval")
+}
+
+record(ai, "$(DEVN):rbkArmTimerInterval") {
+    field(DESC, "Arm timer interval")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(ARM:TIM) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1e5")
+}
+
+# number of measurements, slow at higher values!
+#record(longout, "$(DEVN):setArmCnt") {
+#    info("autosaveFields_pass0", "VAL")
+#    field(DESC, "Arm count")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) setDec(ARM:COUN) $(PORT) -1")
+#    field(DOL,  "1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#    field(DRVL, "1")
+#    field(DRVH, "2048")
+#    field(FLNK, "$(DEVN):rbkArmCnt")
+#}
+
+#record(longin, "$(DEVN):rbkArmCnt") {
+#    field(DESC, "Arm count")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) getDec(ARM:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#}
+
+####
+# TRIGGER
+####
+
+record(mbbo, "$(DEVN):setTrgSrc") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Trigger source")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setTrigSour() $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "Trigger Link")
+    field(FLNK, "$(DEVN):rbkTrgSrc")
+}
+
+record(mbbi, "$(DEVN):rbkTrgSrc") {
+    field(DESC, "Trigger source readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getTrigSour() $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "Trigger Link")
+}
+
+record(mbbo, "$(DEVN):setTrgInLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK trigger input line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkTrgInLine")
+}
+
+record(mbbi, "$(DEVN):rbkTrgInLine") {
+    field(DESC, "TLINK trigger input line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(mbbo, "$(DEVN):setTrgOutLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK trigger output line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:OLIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkTrgOutLine")
+}
+
+record(mbbi, "$(DEVN):rbkTrgOutLine") {
+    field(DESC, "TLINK trigger output line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:OLIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(bo, "$(DEVN):setTrgOut") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable trigger output")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setTrigOut() $(PORT) -1")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(DEVN):rbkTrgOut")
+}
+
+record(bi, "$(DEVN):rbkTrgOut") {
+    field(DESC, "Disable/Enable trigger output")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getTrigOut() $(PORT) -1")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(ao, "$(DEVN):setTrgDly") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Trigger Delay")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(TRIG:DEL) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1000")
+    field(DRVL, "0")
+    field(DRVH, "999.9998")
+    field(FLNK, "$(DEVN):rbkTrgDly")
+}
+
+record(ai, "$(DEVN):rbkTrgDly") {
+    field(DESC, "Trigger Delay")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(TRIG:DEL) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1000")
+}
+
+record(bo, "$(DEVN):setTrgDlyAuto") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable trigger autodelay")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:DEL:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+    field(FLNK, "$(DEVN):rbkTrgDlyAuto")
+}
+
+record(bi, "$(DEVN):rbkTrgDlyAuto") {
+    field(DESC, "Disable/Enable trigger autodelay")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:DEL:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+}
+
+# number of measurements, slow at higher values!
+#record(longout, "$(DEVN):setTrgCnt") {
+#    info("autosaveFields_pass0", "VAL")
+#    field(DESC, "Trigger count")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) setDec(TRIG:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2500")
+#    field(DRVL, "1")
+#    field(DRVH, "2500")
+#    field(FLNK, "$(DEVN):rbkTrgCnt")
+#}
+#record(longin, "$(DEVN):rbkTrgCnt") {
+#    field(DESC, "Trigger count")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) getDec(TRIG:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#}
+
+record(bo, "$(DEVN):cmdStart") {
+    field(DESC, "SCPI Reset")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(INIT) $(PORT) -1")
+}
+
+record(bo, "$(DEVN):cmdCancel") {
+    field(DESC, "Cancel trigger sequence")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(ABOR) $(PORT) -1")
+}
+
+#####
+## Calibration
+#####
+# null input amplifier offsetStr, put shiedling cap on Input jack before use!
+#record(bo, "$(DEVN):calibAmplOFS") {
+#    field(DESC, "null input amplifier offsetStr")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) cmd(CAL:UNPR:VOFF) $(PORT) -1")
+#}
+
+## Zero-check
+record(bo, "$(DEVN):cmdZeroCheck") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable zero check (input clamp)")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:ZCH:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkZeroCheck")
+    field(VAL, "0")
+}
+record(bi, "$(DEVN):rbkZeroCheck") {
+    field(DESC, "zero check (input clamp)")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:ZCH:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+## Auto-Zero
+record(bo, "$(DEVN):cmdAutoZero") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable auto Zero")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:AZER) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkAutoZero")
+}
+record(bi, "$(DEVN):rbkAutoZero") {
+    field(DESC, "auto Zero")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:AZER) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+## Zero-Correct
+record(bo, "$(DEVN):cmdZeroCorrect") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable zero correct")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:ZCOR:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkZeroCorrect")
+}
+record(bi, "$(DEVN):rbkZeroCorrect") {
+    field(DESC, "zero correct")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:ZCOR:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+#Use last reading taken as zero correct value.
+record(bo, "$(DEVN):startZeroCorrectAcq") {
+    field(DESC, "take reading and use it as ZCOR Val")
+    field(FLNK, "$(DEVN):rdZeroCorrectVal")
+}
+record(ai, "$(DEVN):rdZeroCorrectVal") {
+    field(DESC, "take reading for ZCOR")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "5")
+    field(FLNK, "$(DEVN):cmdZeroCorrectAcq")
+}
+record(bo, "$(DEVN):cmdZeroCorrectAcq") {
+    field(DESC, "set reading as ZCOR Val")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(SYST:ZCOR:ACQ) $(PORT) -1")
+}
+
+#####
+# ARCHIVE
+#####
+
+# archiver tool has problems with to many decimal places,
+# thus we implement mA, uA and nA calculation
+record(calc, "$(DEVN):rdCurE3") {
+    field(DESC, "Measure current in mA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "mA")
+    field(CALC, "A*10^3")
+    field(PREC, "13")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+record(calc, "$(DEVN):rdCurE6") {
+    field(DESC, "Measure current in uA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "uA")
+    field(CALC, "A*10^6")
+    field(PREC, "10")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+record(calc, "$(DEVN):rdCurE9") {
+    field(DESC, "Measure current in nA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "nA")
+    field(CALC, "A*10^9")
+    field(PREC, "7")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+#####
+# DEBUGING
+#####
+# send arbitrary commands to device
+# trigger readback
+record(stringout, "$(DEVN):debug:cmdStr") {
+    field(DESC, "debug interface to send test commands")
+    field(DTYP, "stream")
+    field(OUT, "@$(PROTO) debugCmd $(PORT) -1")
+    field(FLNK, "$(DEVN):debug:rbkStr.PROC")
+}
+
+# readback (if any) from debug cmd
+# trigger readout of potential caused system errors
+record(waveform, "$(DEVN):debug:rbkStr") {
+    field(DESC, "Debug Readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) debugRbk $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "2048")
+#    field(FLNK, "$(DEVN):debug:rdMsg.PROC")
+}
+
+# read errors
+record(waveform, "$(DEVN):debug:rdErrMsg") {
+    field(DESC, "Last System Errors")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getStr(SYST:ERR:ALL) $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "120")
+}
+##########################################################################
+# Copyright (c) 2011 Lawrence Berkeley National Laboratory, Accelerator
+#                    Technology Group, Engineering Division
+# Copyright (c) 2018 Helmholtz-Zentrum Berlin für Materialien
+#                    und Energie GmbH, Germany (HZB)
+# This code is distributed subject to a Software License Agreement found
+# in file LICENSE that is included with this distribution.
+# NOTE: This is a strongly modified HZB version of the original driver.
+##########################################################################
+
+####
+## INIT
+####
+record (bo, "$(DEVN):init") {
+    field(DESC, "set init parameters")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) init($(DEVN)) $(PORT) -1")
+    field(PINI, "YES")
+    field(FLNK, "$(DEVN):fwdInit.PROC")
+}
+
+record(seq, "$(DEVN):cmdReset") {
+    field(DESC, "reset device")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdRst.PROC")
+    field(LNK2, "$(DEVN):init.PROC")
+}
+
+# Update Readback after Reset
+record(seq, "$(DEVN):fwdInit") {
+    field(DESC, "records to be processed during init")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):fwdMisc.PROC")
+    field(LNK2, "$(DEVN):fwdRangeCur.PROC")
+    field(LNK3, "$(DEVN):fwdFilt.PROC")
+    field(LNK4, "$(DEVN):fwdZero.PROC")
+    field(LNK5, "$(DEVN):fwdArm.PROC")
+    field(LNK6, "$(DEVN):fwdTrig.PROC")
+}
+
+record(seq, "$(DEVN):fwdMisc") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):rstTrgConf.PROC")
+    field(LNK2, "$(DEVN):rdMer.PROC")
+    field(LNK3, "$(DEVN):setDispRes.PROC")
+    field(LNK4, "$(DEVN):cmdDisp.PROC")
+    field(LNK5, "$(DEVN):cmdMee.PROC")
+    field(LNK6, "$(DEVN):idn.PROC")
+}
+
+record(seq, "$(DEVN):fwdRangeCur") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setRangeCur.PROC")
+    field(LNK2, "$(DEVN):cmdRangeCurAuto.PROC")
+    field(LNK3, "$(DEVN):setRangeCurAutoLLIM.PROC")
+    field(LNK4, "$(DEVN):setRangeCurAutoULIM.PROC")
+}
+
+record(seq, "$(DEVN):fwdFilt") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdFiltAverEnable.PROC")
+    field(LNK2, "$(DEVN):cmdFiltAverCtrl.PROC")
+    field(LNK3, "$(DEVN):setFiltAverCnt.PROC")
+    field(LNK4, "$(DEVN):cmdFiltMedEnable.PROC")
+    field(LNK5, "$(DEVN):setFiltMedRnk.PROC")
+    field(LNK6, "$(DEVN):setIntegrTime.PROC")
+    field(LNK7, "$(DEVN):setFiltDampEnable.PROC")
+}
+
+record(seq, "$(DEVN):fwdZero") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):cmdAutoZero.PROC")
+    field(LNK2, "$(DEVN):cmdZeroCorrect.PROC")
+    field(LNK3, "$(DEVN):cmdZeroCheck.PROC")
+}
+
+record(seq, "$(DEVN):fwdArm") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setArmSrc.PROC")
+    field(LNK2, "$(DEVN):setArmLine.PROC")
+    field(LNK3, "$(DEVN):setArmTimerInterval.PROC")
+#    field(LNK4, "$(DEVN):setArmCnt.PROC")
+}
+
+record(seq, "$(DEVN):fwdTrig") {
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):setTrgSrc.PROC")
+    field(LNK2, "$(DEVN):setTrgInLine.PROC")
+    field(LNK3, "$(DEVN):setTrgOutLine.PROC")
+    field(LNK4, "$(DEVN):setTrgOut.PROC")
+    field(LNK5, "$(DEVN):setTrgDly.PROC")
+    field(LNK6, "$(DEVN):setTrgDlyAuto.PROC")
+#    field(LNK7, "$(DEVN):setTrgCnt.PROC")
+}
+
+####
+## SCAN ROUTINE
+####
+# cyclic scanning of keithley
+record (seq, "$(DEVN):fwdUpd") {
+    field(DESC, "scan routine")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):rdCur.PROC")
+    field(LNK2, "$(DEVN):rdStb.PROC")
+    field(LNK3, "$(DEVN):rdEsr.PROC")
+    field(SCAN, "1 second")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(FLNK, "$(DEVN):chkStatus.PROC")
+}
+
+record (seq, "$(DEVN):chkStatus") {
+    field(DESC, "check status register")
+    field(SELM, "All")
+    field(LNK1, "$(DEVN):chkMer.PROC")
+    field(LNK2, "$(DEVN):chkErrMsg.PROC")
+    field(LNK3, "$(DEVN):chkPon.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# check MER if bit 0 in STB set
+record (calcout, "$(DEVN):chkMer") {
+    field(DESC, "check for new MER reg value")
+    field(INPA, "$(DEVN):rdStb.B0 NPP")
+    field(OOPT, "When Non-zero")
+    field(CALC, "A")
+    field(OUT, "$(DEVN):rdMer.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# check Power on
+record (calcout, "$(DEVN):chkPon") {
+    field(DESC, "init device after power on")
+    field(INPA, "$(DEVN):rdEsr.B7 NPP")
+    field(OOPT, "When Non-zero")
+    field(CALC, "A")
+    field(OUT, "$(DEVN):init.PROC")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+}
+
+# Status
+record (mbbiDirect, "$(DEVN):rdMer"){
+    field(DESC, "Measurement Event Registers")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getDec(STAT:MEAS:EVEN) $(PORT) -1")
+}
+
+# enable Measurement Event Registers
+record(mbboDirect, "$(DEVN):cmdMee") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "enable Measurement Event Registers")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(STAT:MEAS:ENAB) $(PORT) -1")
+    field(VAL,  "1152")
+    field(FLNK, "$(DEVN):rbkMee")
+}
+
+record(mbbiDirect, "$(DEVN):rbkMee") {
+    field(DESC, "enable Measurement Event Registers")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(STAT:MEAS:ENAB) $(PORT) -1")
+}
+
+####
+# Display
+####
+record(bo, "$(DEVN):cmdDisp") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "SCPI Display ON/OFF")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(DISP:ENAB) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkDisp")
+}
+record(bi, "$(DEVN):rbkDisp") {
+    field(DESC, "Display ON/OFF Status")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(DISP:ENAB) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+record (mbbo, "$(DEVN):setDispRes") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set display resolution")
+    field(OUT, "@$(PROTO) setDec(DISP:DIG) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL,"4")
+    field(ONVL,"5")
+    field(TWVL,"6")
+    field(THVL,"7")
+    field(ZRST,"4 Digits")
+    field(ONST,"5 Digits")
+    field(TWST,"6 Digits")
+    field(THST,"7 Digits")
+    field(VAL, "3")
+    field(FLNK, "$(DEVN):rbkDispRes")
+}
+
+record (mbbi, "$(DEVN):rbkDispRes") {
+    field(DESC, "display resolution")
+    field(INP, "@$(PROTO) getDec(DISP:DIG) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL,"4")
+    field(ONVL,"5")
+    field(TWVL,"6")
+    field(THVL,"7")
+    field(ZRST,"4 Digits")
+    field(ONST,"5 Digits")
+    field(TWST,"6 Digits")
+    field(THST,"7 Digits")
+}
+
+#####
+# Measurement
+#####
+
+## Reading
+# TRIG:COUN is 1 => we only expect one value at a time
+record(ai, "$(DEVN):rdCur") {
+    field(DESC, "Measure current")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "16")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+# use this if TRIG:COUN > 1
+#record(waveform, "$(DEVN):rdCur2") {
+#    field(DESC, "Measure current")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) read2() $(PORT) -1")
+#    field(FTVL, "FLOAT")
+#    field(NELM, "2500")
+#    field(EGU,  "A")
+#    field(PREC, "16")
+#    field(DISV, "1")
+#    field(SDIS, "$(DEVN):disable CA")
+#    field(DISS, "INVALID")
+#}
+
+## Range
+# current range
+record(mbbo, "$(DEVN):setRangeCur") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "current scale range")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "5")
+    field(FLNK, "$(DEVN):rbkRangeCur")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCur") {
+    field(DESC, "current scale range readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+record(bo, "$(DEVN):cmdRangeCurAuto") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable auto-range")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(CURR:RANG:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+    field(FLNK, "$(DEVN):rbkRangeCurAuto")
+}
+
+record(bi, "$(DEVN):rbkRangeCurAuto") {
+    field(DESC, "Disable/Enable auto-range")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SENS:CURR:RANG:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+}
+
+record(mbbo, "$(DEVN):setRangeCurAutoLLIM") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "auto range lower limit")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG:AUTO:LLIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkRangeCurAutoLLIM")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCurAutoLLIM") {
+    field(DESC, "auto range lower limit readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG:AUTO:LLIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+record(mbbo, "$(DEVN):setRangeCurAutoULIM") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "auto range upper limit")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setRangeCur(SENS:CURR:RANG:AUTO:ULIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+    field(VAL,  "7")
+    field(FLNK, "$(DEVN):rbkRangeCurAutoULIM")
+}
+
+record(mbbi, "$(DEVN):rbkRangeCurAutoULIM") {
+    field(DESC, "auto range upper limit readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getRangeCur(SENS:CURR:RANG:AUTO:ULIM) $(PORT) -1")
+    field(ZRVL, "9")
+    field(ZRST, "2 nA")
+    field(ONVL, "8")
+    field(ONST, "20 nA")
+    field(TWVL, "7")
+    field(TWST, "200 nA")
+    field(THVL, "6")
+    field(THST, "2 uA")
+    field(FRVL, "5")
+    field(FRST, "20 uA")
+    field(FVVL, "4")
+    field(FVST, "200 uA")
+    field(SXVL, "3")
+    field(SXST, "2 mA")
+    field(SVVL, "2")
+    field(SVST, "20 mA")
+}
+
+## Integration time in PowerLineCycles
+# default 5.0 for 50Hz where one cycle is 20msec
+# default 6.0 for 60Hz where one cycle is 16.67msec
+record(ao, "$(DEVN):setIntegrTime") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Reading integration time")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(CURR:NPLC) $(PORT) -1")
+    field(EGU,  "Cycles")
+    field(PREC, "2")
+    field(LOPR, "0")
+    field(HOPR, "60")
+    field(DRVL, "0.01")
+    field(DRVH, "60")
+    field(VAL,  "5")
+    field(FLNK, "$(DEVN):rbkIntegrTime")
+}
+record(ai, "$(DEVN):rbkIntegrTime") {
+    field(DESC, "Reading integration time")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(CURR:NPLC) $(PORT) -1")
+    field(EGU,  "Cycles")
+    field(PREC, "2")
+    field(LOPR, "0")
+    field(HOPR, "60")
+}
+
+
+####
+# Filter
+####
+
+## Median Filter
+record (mbbo, "$(DEVN):setFiltMedRnk") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set Rank, sample Readings = (2 x R) + 1")
+    field(OUT, "@$(PROTO) setDec(MED:RANK) $(PORT) -1")
+    field(DTYP, "stream")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "3")
+    field(THVL, "4")
+    field(FRVL, "5")
+    field(ZRST, "1")
+    field(ONST, "2")
+    field(TWST, "3")
+    field(THST, "4")
+    field(FRST, "5")
+    field(FLNK, "$(DEVN):rbkFiltMedRnk")
+}
+
+record (mbbi, "$(DEVN):rbkFiltMedRnk") {
+    field(DESC, "rbk Rank, sample Readings = (2 x R) + 1")
+    field(DTYP, "stream")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "3")
+    field(THVL, "4")
+    field(FRVL, "5")
+    field(ZRST, "1")
+    field(ONST, "2")
+    field(TWST, "3")
+    field(THST, "4")
+    field(FRST, "5")
+    field(INP, "@$(PROTO) getDec(MED:RANK) $(PORT) -1")
+}
+
+record(bo, "$(DEVN):cmdFiltMedEnable") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(MED) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+    field(FLNK, "$(DEVN):rbkFiltMedEnable")
+}
+
+record(bi, "$(DEVN):rbkFiltMedEnable") {
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(MED) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+## Digital Filter (Average)
+record(longout, "$(DEVN):setFiltAverCnt") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Number of samples in reading")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(AVER:COUN) $(PORT) -1")
+    field(EGU,  "Samples")
+    field(LOPR, "2")
+    field(HOPR, "100")
+    field(DRVL, "2")
+    field(DRVH, "100")
+    field(VAL,  "2")
+    field(FLNK, "$(DEVN):rbkFiltAverCnt")
+}
+
+record(longin, "$(DEVN):rbkFiltAverCnt") {
+    field(DESC, "Number of samples in reading")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(AVER:COUN) $(PORT) -1")
+    field(EGU,  "Samples")
+    field(LOPR, "2")
+    field(HOPR, "100")
+}
+
+record(bo, "$(DEVN):cmdFiltAverEnable") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(AVER) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+    field(FLNK, "$(DEVN):rbkFiltAverEnable")
+}
+
+record(bi, "$(DEVN):rbkFiltAverEnable") {
+    field(DESC, "Disable/Enable filter")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(AVER) $(PORT) -1")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+record(bo, "$(DEVN):cmdFiltAverCtrl") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "set filter control, Moving or Repeat")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setStr(AVER:TCON) $(PORT) -1")
+    field(ZNAM, "Moving")
+    field(ONAM, "Repeat")
+    field(FLNK, "$(DEVN):rbkFiltAverCtrl")
+}
+
+record(bi, "$(DEVN):rbkFiltAverCtrl") {
+    field(DESC, "filter control, MOVing or REPeat")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getStr(AVER:TCON) $(PORT) -1")
+    field(ZNAM, "MOV")
+    field(ONAM, "REP")
+}
+
+####
+# ARM
+####
+# BUS not supported by READ? command
+record(mbbo, "$(DEVN):setArmSrc") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Arm source")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setArmSour $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "GPIB/Serial")
+    field(TWVL, "2")
+    field(TWST, "Timer")
+    field(THVL, "3")
+    field(THST, "Manual")
+    field(FRVL, "4")
+    field(FRST, "Trigger Link")
+    field(FLNK, "$(DEVN):rbkArmSrc")
+}
+
+record(mbbi, "$(DEVN):rbkArmSrc") {
+    field(DESC, "Arm source readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getArmSour $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "GPIB/Serial")
+    field(TWVL, "2")
+    field(TWST, "Timer")
+    field(THVL, "3")
+    field(THST, "Manual")
+    field(FRVL, "4")
+    field(FRST, "Trigger Link")
+}
+
+record(mbbo, "$(DEVN):setArmLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK arm line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(ARM:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkArmLine")
+}
+
+record(mbbi, "$(DEVN):rbkArmLine") {
+    field(DESC, "TLINK arm line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(ARM:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(ao, "$(DEVN):setArmTimerInterval") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Arm timer interval")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(ARM:TIM) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1e5")
+    field(DRVL, "0.001")
+    field(DRVH, "99999.999")
+    field(FLNK, "$(DEVN):rbkArmTimerInterval")
+}
+
+record(ai, "$(DEVN):rbkArmTimerInterval") {
+    field(DESC, "Arm timer interval")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(ARM:TIM) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1e5")
+}
+
+# number of measurements, slow at higher values!
+#record(longout, "$(DEVN):setArmCnt") {
+#    info("autosaveFields_pass0", "VAL")
+#    field(DESC, "Arm count")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) setDec(ARM:COUN) $(PORT) -1")
+#    field(DOL,  "1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#    field(DRVL, "1")
+#    field(DRVH, "2048")
+#    field(FLNK, "$(DEVN):rbkArmCnt")
+#}
+
+#record(longin, "$(DEVN):rbkArmCnt") {
+#    field(DESC, "Arm count")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) getDec(ARM:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#}
+
+####
+# TRIGGER
+####
+
+record(mbbo, "$(DEVN):setTrgSrc") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Trigger source")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setTrigSour() $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "Trigger Link")
+    field(FLNK, "$(DEVN):rbkTrgSrc")
+}
+
+record(mbbi, "$(DEVN):rbkTrgSrc") {
+    field(DESC, "Trigger source readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getTrigSour() $(PORT) -1")
+    field(ZRVL, "0")
+    field(ZRST, "Immediate")
+    field(ONVL, "1")
+    field(ONST, "Trigger Link")
+}
+
+record(mbbo, "$(DEVN):setTrgInLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK trigger input line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkTrgInLine")
+}
+
+record(mbbi, "$(DEVN):rbkTrgInLine") {
+    field(DESC, "TLINK trigger input line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:ILIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(mbbo, "$(DEVN):setTrgOutLine") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "TLINK trigger output line")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:OLIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+    field(VAL,  "0")
+    field(FLNK, "$(DEVN):rbkTrgOutLine")
+}
+
+record(mbbi, "$(DEVN):rbkTrgOutLine") {
+    field(DESC, "TLINK trigger output line")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:OLIN) $(PORT) -1")
+    field(ZRVL, "1")
+    field(ZRST, "TLink 1")
+    field(ONVL, "2")
+    field(ONST, "TLink 2")
+    field(TWVL, "3")
+    field(TWST, "TLink 3")
+    field(THVL, "4")
+    field(THST, "TLink 4")
+    field(FRVL, "5")
+    field(FRST, "TLink 5")
+    field(FVVL, "6")
+    field(FVST, "TLink 6")
+}
+
+record(bo, "$(DEVN):setTrgOut") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable trigger output")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setTrigOut() $(PORT) -1")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(DEVN):rbkTrgOut")
+}
+
+record(bi, "$(DEVN):rbkTrgOut") {
+    field(DESC, "Disable/Enable trigger output")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getTrigOut() $(PORT) -1")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(ao, "$(DEVN):setTrgDly") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Trigger Delay")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setFlt(TRIG:DEL) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1000")
+    field(DRVL, "0")
+    field(DRVH, "999.9998")
+    field(FLNK, "$(DEVN):rbkTrgDly")
+}
+
+record(ai, "$(DEVN):rbkTrgDly") {
+    field(DESC, "Trigger Delay")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getFlt(TRIG:DEL) $(PORT) -1")
+    field(EGU,  "s")
+    field(PREC, "5")
+    field(LOPR, "0")
+    field(HOPR, "1000")
+}
+
+record(bo, "$(DEVN):setTrgDlyAuto") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable trigger autodelay")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(TRIG:DEL:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+    field(FLNK, "$(DEVN):rbkTrgDlyAuto")
+}
+
+record(bi, "$(DEVN):rbkTrgDlyAuto") {
+    field(DESC, "Disable/Enable trigger autodelay")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(TRIG:DEL:AUTO) $(PORT) -1")
+    field(ZNAM, "Fixed")
+    field(ONAM, "Auto")
+}
+
+# number of measurements, slow at higher values!
+#record(longout, "$(DEVN):setTrgCnt") {
+#    info("autosaveFields_pass0", "VAL")
+#    field(DESC, "Trigger count")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) setDec(TRIG:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2500")
+#    field(DRVL, "1")
+#    field(DRVH, "2500")
+#    field(FLNK, "$(DEVN):rbkTrgCnt")
+#}
+#record(longin, "$(DEVN):rbkTrgCnt") {
+#    field(DESC, "Trigger count")
+#    field(DTYP, "stream")
+#    field(INP,  "@$(PROTO) getDec(TRIG:COUN) $(PORT) -1")
+#    field(LOPR, "1")
+#    field(HOPR, "2048")
+#}
+
+record(bo, "$(DEVN):cmdStart") {
+    field(DESC, "SCPI Reset")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(INIT) $(PORT) -1")
+}
+
+record(bo, "$(DEVN):cmdCancel") {
+    field(DESC, "Cancel trigger sequence")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(ABOR) $(PORT) -1")
+}
+
+#####
+## Calibration
+#####
+# null input amplifier offsetStr, put shiedling cap on Input jack before use!
+#record(bo, "$(DEVN):calibAmplOFS") {
+#    field(DESC, "null input amplifier offsetStr")
+#    field(DTYP, "stream")
+#    field(OUT,  "@$(PROTO) cmd(CAL:UNPR:VOFF) $(PORT) -1")
+#}
+
+## Zero-check
+record(bo, "$(DEVN):cmdZeroCheck") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable zero check (input clamp)")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:ZCH:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkZeroCheck")
+    field(VAL, "0")
+}
+record(bi, "$(DEVN):rbkZeroCheck") {
+    field(DESC, "zero check (input clamp)")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:ZCH:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+## Auto-Zero
+record(bo, "$(DEVN):cmdAutoZero") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable auto Zero")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:AZER) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkAutoZero")
+}
+record(bi, "$(DEVN):rbkAutoZero") {
+    field(DESC, "auto Zero")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:AZER) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+## Zero-Correct
+record(bo, "$(DEVN):cmdZeroCorrect") {
+    info("autosaveFields_pass0", "VAL")
+    field(DESC, "Disable/Enable zero correct")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(SYST:ZCOR:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(DEVN):rbkZeroCorrect")
+}
+record(bi, "$(DEVN):rbkZeroCorrect") {
+    field(DESC, "zero correct")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(SYST:ZCOR:STAT) $(PORT) -1")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+#Use last reading taken as zero correct value.
+record(bo, "$(DEVN):startZeroCorrectAcq") {
+    field(DESC, "take reading and use it as ZCOR Val")
+    field(FLNK, "$(DEVN):rdZeroCorrectVal")
+}
+record(ai, "$(DEVN):rdZeroCorrectVal") {
+    field(DESC, "take reading for ZCOR")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) read() $(PORT) -1")
+    field(EGU,  "A")
+    field(PREC, "5")
+    field(FLNK, "$(DEVN):cmdZeroCorrectAcq")
+}
+record(bo, "$(DEVN):cmdZeroCorrectAcq") {
+    field(DESC, "set reading as ZCOR Val")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(SYST:ZCOR:ACQ) $(PORT) -1")
+}
+
+#####
+# ARCHIVE
+#####
+
+# archiver tool has problems with to many decimal places,
+# thus we implement mA, uA and nA calculation
+record(calc, "$(DEVN):rdCurE3") {
+    field(DESC, "Measure current in mA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "mA")
+    field(CALC, "A*10^3")
+    field(PREC, "13")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+record(calc, "$(DEVN):rdCurE6") {
+    field(DESC, "Measure current in uA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "uA")
+    field(CALC, "A*10^6")
+    field(PREC, "10")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+record(calc, "$(DEVN):rdCurE9") {
+    field(DESC, "Measure current in nA")
+    field(INPA, "$(DEVN):rdCur CP")
+    field(EGU,  "nA")
+    field(CALC, "A*10^9")
+    field(PREC, "7")
+    field(DISV, "1")
+    field(SDIS, "$(DEVN):disable CA")
+    field(DISS, "INVALID")
+}
+
+#####
+# DEBUGING
+#####
+# send arbitrary commands to device
+# trigger readback
+record(stringout, "$(DEVN):debug:cmdStr") {
+    field(DESC, "debug interface to send test commands")
+    field(DTYP, "stream")
+    field(OUT, "@$(PROTO) debugCmd $(PORT) -1")
+    field(FLNK, "$(DEVN):debug:rbkStr.PROC")
+}
+
+# readback (if any) from debug cmd
+# trigger readout of potential caused system errors
+record(waveform, "$(DEVN):debug:rbkStr") {
+    field(DESC, "Debug Readback")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) debugRbk $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "2048")
+#    field(FLNK, "$(DEVN):debug:rdMsg.PROC")
+}
+
+# read errors
+record(waveform, "$(DEVN):debug:rdErrMsg") {
+    field(DESC, "Last System Errors")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getStr(SYST:ERR:ALL) $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "120")
+}
+

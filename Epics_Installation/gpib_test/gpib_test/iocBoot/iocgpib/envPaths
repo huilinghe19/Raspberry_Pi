@@ -1,0 +1,5 @@
+epicsEnvSet("IOC","iocgpib")
+epicsEnvSet("TOP","/home/pi/gpib_test")
+epicsEnvSet("ASYN","/usr/local/epics/support/asyn")
+epicsEnvSet("STREAM","/usr/local/epics/support/StreamDevice-2-8-9")
+epicsEnvSet("EPICS_BASE","/usr/local/epics/epics-base")

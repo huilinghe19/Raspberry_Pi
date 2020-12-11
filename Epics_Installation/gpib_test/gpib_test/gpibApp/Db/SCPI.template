@@ -1,0 +1,90 @@
+####
+## COMMON
+####
+# disable scanning
+record (bo, "$(DEVN):disable") {
+   info("autosaveFields_pass0","VAL")
+   field(DESC, "disable scan routine")
+   field(ZNAM, "enabled")
+   field(ONAM, "disabled")
+   field(PINI, "YES")
+}
+
+record(waveform, "$(DEVN):idn") {
+    field(DESC, "SCPI identification string")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getIdn(119) $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "120")
+    field(PINI, "YES")
+}
+record(waveform, "$(DEVN):rdSysVer") {
+    field(DESC, "SCPI system version string")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getSystVers(19) $(PORT) -1")
+    field(FTVL, "CHAR")
+    field(NELM, "20")
+    field(PINI, "YES")
+}
+record(bo, "$(DEVN):cmdRst") {
+    field(DESC, "SCPI Reset")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(*RST) $(PORT) -1")
+}
+record(bo, "$(DEVN):cmdCls") {
+    field(DESC, "SCPI Clear status")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(*CLS) $(PORT) -1")
+}
+record(bo, "$(DEVN):cmdTrg") {
+    field(DESC, "SCPI trigger")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(*TRG) $(PORT) -1")
+}
+record(bo, "$(DEVN):cmdInit") {
+    field(DESC, "SCPI Init")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) cmd(INIT) $(PORT) -1")
+}
+
+####
+## STATUS
+####
+record(mbbiDirect, "$(DEVN):rdStb") {
+    field(DESC, "SCPI get status byte")
+    field(DTYP, "stream")
+    field(INP, "@$(PROTO) getDec(*STB) $(PORT) -1")
+}
+record(mbbiDirect, "$(DEVN):rdEsr") {
+    field(DESC, "SCPI get event status")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(*ESR) $(PORT) -1")
+}
+record(mbboDirect, "$(DEVN):setEse") {
+    field(DESC, "SCPI enable event status")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(*ESE) $(PORT) -1")
+    field(FLNK, "$(DEVN):rdEse.PROC")
+}
+record(mbbiDirect, "$(DEVN):rdEse") {
+    field(DESC, "SCPI enabled event status")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(*ESE) $(PORT) -1")
+}
+record(mbboDirect, "$(DEVN):setSre") {
+    field(DESC, "SCPI enable service requests")
+    field(DTYP, "stream")
+    field(OUT,  "@$(PROTO) setDec(*SRE) $(PORT) -1")
+    field(FLNK, "$(DEVN):rdSre.PROC")
+}
+record(mbbiDirect, "$(DEVN):rdSre") {
+    field(DESC, "Enabled service requests")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(*SRE) $(PORT) -1")
+}
+record(longin, "$(DEVN):stOpc") {
+    field(DESC, "Output completion status")
+    field(DTYP, "stream")
+    field(INP,  "@$(PROTO) getDec(*OPC) $(PORT) -1")
+}
+

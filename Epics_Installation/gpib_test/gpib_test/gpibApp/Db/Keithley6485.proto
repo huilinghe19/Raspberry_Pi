@@ -1,0 +1,102 @@
+##########################################################################
+# Copyright (c) 2011 Lawrence Berkeley National Laboratory, Accelerator
+#                    Technology Group, Engineering Division
+# Copyright (c) 2018 Helmholtz-Zentrum Berlin für Materialien           
+#                    und Energie GmbH, Germany (HZB)
+# This code is distributed subject to a Software License Agreement found
+# in file LICENSE that is included with this distribution.
+# NOTE: This is a strongly modified HZB version of the original driver.
+##########################################################################
+
+LockTimeout = 7500;
+WriteTimeout = 1000;
+ReplyTimeout = 3000;
+ReadTimeout = 1000;
+InTerminator = "\r";
+OutTerminator = "\r";
+
+####
+## GENERAL
+####
+init {
+    out "FORM:DATA ASC"; out "FORM:SREG ASC";
+    out "FORM:ELEM READ"; out "FORM:BORD NORMAL"; 
+    out "CONF:CURR:DC"; out "TRIG:COUN 1";
+}
+
+cmd { out "\$1";}
+setDec { out "\$1 %d"; }
+getDec { out "\$1?"; in "%d"; ExtraInput = Ignore; }
+setFlt { out "\$1 %f"; }
+getFlt { out "\$1?"; in "%f"; ExtraInput = Ignore; }
+setStr { out "\$1 %s"; }
+getStr { out "\$1?"; in "%s"; ExtraInput = Ignore; }
+
+####
+## COMMON
+####
+getIDN {out "*IDN?"; in "%\$1[^\r\n]"; ExtraInput = Ignore;}
+
+####
+## SENSe
+####
+setRangeCur { out "\$1 2E-%d"; }
+getRangeCur { out "\$1?"; in "%*[^E]E-%d"; ExtraInput = Ignore; }
+
+####
+## TRIGger
+####
+getTrigSour { out "TRIG:SOUR?"; in "%{IMM|TLIN}"; ExtraInput = Ignore;}
+setTrigSour { out "TRIG:SOUR %{IMM|TLIN}"; }
+
+getTrigOut { out "TRIG:OUTP?"; in "%{NONE|SENS}"; ExtraInput = Ignore;}
+setTrigOut { out "TRIG:OUTP %{NONE|SENS}"; }
+
+####
+## ARM
+####
+setArmSour {out "ARM:SOUR %{IMM|BUS|TIM|MAN|TLIN|NST|PST|BST}"; }
+getArmSour {out "ARM:SOUR?"; in "%{IMM|BUS|TIM|MAN|TLIN|NST|PST|BST}"; ExtraInput = Ignore;}
+
+####
+## MEASUREMENT
+####
+#trigger and fetch fresh reading
+read {
+    ReplyTimeout = 5000;
+    out "READ?";
+    in "%f";
+    ExtraInput = Ignore;
+}
+#use this if TRIG:COUN > 1
+#read2 {
+#    ReplyTimeout = 10000;
+#    Separator = ",";
+#    out "READ?";
+#    in "%f";
+#    ExtraInput = Ignore;
+#}
+
+####
+## SYSTem
+####
+getSystVers {out "SYST:VERS?"; in "%\$1[^\r\n]"; ExtraInput = Ignore;}
+getSystErrAll {out "SYST:ERR:ALL?"; in "%\$1[^\r\n]";}
+
+getSystErrNxt {out "SYST:ERR:NEXT?";in '%(\$1:systErrNum.VAL)d,"%255[^"]"';}
+getSystErrCnt {out "SYST:ERR:COUN?";in "%d";}
+
+####
+## DEBUGING
+####
+# Connect a stringout record to this to get a generic command interface.
+# After processing finishes, the record contains the reply.
+debugCmd {
+    out "%#s";
+}
+
+debugRbk {
+    in "%#s";
+}
+
+
