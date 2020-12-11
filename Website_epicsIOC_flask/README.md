@@ -24,10 +24,6 @@ http://192.168.1.101:8080/openKeithley2000IOC
 http://192.168.1.101:8080/openKeithley3000IOC (just for testing, has the same function with Keithley 2000)
 
 
-## Abput IP address
-
-we can also change the IP address. For example, there is another computer with IP address: 134.30.210.74. EPICS IOC is in this computer. Then we can change the ip address in the flask_server.py, after running the python script, we can open the sebsite and open IOC.
-
 ## Button on the websites: there is a button "start IOC" 
 
 http://192.168.1.101:8080/openKeithley2000IOC 
