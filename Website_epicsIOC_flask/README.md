@@ -1,5 +1,5 @@
 # Webserver on Raspberry Pi (GPIB and EPICS SERVER INSTALLED)
-In oder to give more possibility to use more device servers, flask web server comes into our sight. After opening a website, the devices informations can be changed and configured. In the end, the device IOC can be started with a button directly. It is very simple for those who are no familiar with the instruments. 
+In oder to give more possibilities to use device servers, flask web server comes into our sight. After opening a website, the devices informations can be changed and configured. In the end, the device IOC can be started with a button directly. It is very simple for those who are no familiar with the instruments. 
 
 
 # Method with flask
