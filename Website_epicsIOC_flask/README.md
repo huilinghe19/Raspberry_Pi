@@ -4,9 +4,9 @@ In oder to give more possibility to use more device servers, flask web server co
 
 # Method with flask
 
-flask is already in Raspberry Pi. Super!
+flask and related packages are already in Raspberry Pi. Super!
 
-In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask"
+In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe you should install something else.
 
 ## website with HTML
 
