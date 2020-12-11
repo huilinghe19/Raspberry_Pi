@@ -6,7 +6,7 @@ In oder to give more possibility to use more device servers, flask web server co
 
 ## website with HTML
 
-I habe used just one index.html file. This html comes from jördis index.html originally. But I have deleted all other irrelevant things except a button and a block to show some sentences. css js bootstrap (such things of format) are also not included. In the future I will add somethings to complete the whole functions. 
+I habe used just one index.html file under "Webserver/templates". This html comes from jördis index.html originally. But I have deleted all other irrelevant things except a button and a block to show some sentences. css js bootstrap (such things of format) are also not included. In the future I will add somethings to complete the whole functions. 
 
 ## flask script
 In flask_server.py, the original index link / is still there. The index page shows the informations about how we can get the IOC with links. The button in the index page has no effect.  Other links like /openKeithley2000IOC are used to open IOC.
