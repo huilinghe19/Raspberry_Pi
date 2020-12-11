@@ -15,7 +15,8 @@ In flask_server.py, the original index link / is still there. The index page sho
 
 >>> python3 flask_server.py
 
-There are 3 websites: (ip address of raspberry pi is: 192.168.1.101) we can also change the address. For example, we can use different IP address of another computer like 134.30.210.74, after running flask_server.py, you can get it from your computer. 
+There are 3 websites: (ip address of raspberry pi is: 192.168.1.101) 
+
 http://192.168.1.101:8080
 
 http://192.168.1.101:8080/openKeithley2000IOC
