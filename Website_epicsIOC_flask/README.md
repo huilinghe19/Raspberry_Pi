@@ -15,8 +15,7 @@ In flask_server.py, the original index link / is still there. The index page sho
 
 >>> python3 flask_server.py
 
-There are 3 websites: (ip address of raspberry pi is: 192.168.1.101) we can also change the address. 
-
+There are 3 websites: (ip address of raspberry pi is: 192.168.1.101) we can also change the address. For example, we can use different IP address of another computer like 134.30.210.74, after running flask_server.py, you can get it from your computer. 
 http://192.168.1.101:8080
 
 http://192.168.1.101:8080/openKeithley2000IOC
@@ -24,7 +23,11 @@ http://192.168.1.101:8080/openKeithley2000IOC
 http://192.168.1.101:8080/openKeithley3000IOC (just for testing, has the same function with Keithley 2000)
 
 
-## on the websites: there is a button "start IOC"
+## Abput IP address
+
+we can also change the IP address. For example, there is another computer with IP address: 134.30.210.74. EPICS IOC is in this computer. Then we can change the ip address in the flask_server.py, after running the python script, we can open the sebsite and open IOC.
+
+## Button on the websites: there is a button "start IOC" 
 
 http://192.168.1.101:8080/openKeithley2000IOC 
 
