@@ -31,3 +31,9 @@ My application is under : /home/pi/gpib_test
 
 we can also put the applications under /usr/local/epics/ioc, then all things are under /usr/local/epics.
 
+## usage of gpib_test 
+Consider there is a folder "~/Templates", copy the gpib_test into a new location such as ~/Templates/Keithley/keithley2000/. You have everything under ~/Templates/Keithley/keithley2000/gpib_test.
+
+sudo nano ~/Templates/Keithley/keithley2000/gpib_test/iocBoot/iocgpib/envPaths
+
+(change the IOC name and the TOP als "~/Templates/Keithley/keithley2000/gpib_test/" )
