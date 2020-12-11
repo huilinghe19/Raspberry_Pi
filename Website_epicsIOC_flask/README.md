@@ -6,7 +6,7 @@ In oder to give more possibility to use more device servers, flask web server co
 
 flask and related packages are already in Raspberry Pi. Super!
 
-In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe you should install something else.
+In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe something else should be installed to satisfy your needs.
 
 ## website with HTML
 
