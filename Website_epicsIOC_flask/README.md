@@ -4,6 +4,10 @@ In oder to give more possibility to use more device servers, flask web server co
 
 # Method with flask
 
+flask is already in Raspberry Pi. Super!
+
+In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask"
+
 ## website with HTML
 
 I habe used just one index.html file under "Webserver/templates". This html comes from jördis index.html originally. But I have deleted all other irrelevant things except a button and a block to show some sentences. css js bootstrap (such things of format) are also not included. In the future I will add somethings to complete the whole functions. 
