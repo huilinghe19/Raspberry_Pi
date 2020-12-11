@@ -42,3 +42,11 @@ Consider there is a folder "~/Templates", copy the gpib_test into a new location
     >>> sudo nano ~/Templates/Keithley/keithley2000/gpib_test/iocBoot/iocgpib/st.cmd 
 
 change GPIB address 
+
+
+# BIG PROBLEM: 
+1. can not change file content with jupyter-notebook and nano. 
+2. can not use apt upgrade to upgrade the system.(always broken after upgrading raspi, thanks to the Backup)
+
+# small problem: 
+add startup program for gpib
