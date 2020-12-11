@@ -15,4 +15,4 @@ R6_1 	8/16/19 	3.15.6 	synApps_6_1.tar.gz 	synApps_6_1 	synAppsReleaseNotes.html
 
 from synApps_6_1 to get StreamDevice-2-8-9
 
-compile all things above
+compile epics-base, support/asyn, support/StreamDevice2-8-9
