@@ -11,7 +11,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 All imgs are stored under "~/raspi_image" on dide17 for Backup.
    
 # GPIB Device support
-## Test how GPIB works. It works with Keithley 2000. (with python3) 
+## Test how GPIB works. It works with Keithley 2000. (with python3, install gpib_ctypes) 
     
 
        >>> from gpib_ctypes import gpib
@@ -20,13 +20,15 @@ All imgs are stored under "~/raspi_image" on dide17 for Backup.
        >>> gpib.read(device, 100)
 
 When I use Python to test the GPIB function, sending commands and getting the answers are OK. 
-## The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
+## Install linux-gpib and raspi_gpib_driver.
+
+The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
 
 Information link:
 https://sourceforge.net/projects/linux-gpib/files/
 https://github.com/elektronomikon/raspi_gpib_driver
 
-### Install linux-gpib and raspi_gpib_driver. Basic methods are:
+###  Basic methods are:
       
        >>> cd ~/Downloads
        >>> mkdir HHL
@@ -40,7 +42,7 @@ https://github.com/elektronomikon/raspi_gpib_driver
        >>> make 
        >>> sudo make install
        
-###  Version 4.3.3 is installed with the method from Lutz. 
+###  Version 4.3.3 is installed with the following method from Lutz. Now this version is on the Raspi.
 
 #### Put the sources in dide17, mount it on raspberry pi and compile it. It saves the space of Raspi. 
 
@@ -49,6 +51,7 @@ https://github.com/elektronomikon/raspi_gpib_driver
       >>> make clean (in kernel linux-gpib-kernel-4.3.3, patch is already done in the source)
       >>> make GPIB_DEBUG=1 VERBOSE=1 V=1
       >>> make install
+      (do it again in linux-gpib-user-4.3.3)
       
 #### After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
 
@@ -58,9 +61,9 @@ https://github.com/elektronomikon/raspi_gpib_driver
        >>> sudo gpib_config 
        >>> ibterm -b 19 -N
        (Enter 2 times)
+       keithley ........
        
-
-      
+     
 # Epics Server 
 
 https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
