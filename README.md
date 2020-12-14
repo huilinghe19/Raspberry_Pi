@@ -6,7 +6,7 @@ Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform
 Have installed gpib server and epics server.  have wrote epics server for Keithley 2000, have got the voltage value of keithley 2000. Have wrote a webserver for Keithley 2000 epics IOC. 
 
 # Raspberry Pi
-Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Our aim is to write Epics Server for GPIB Device Control on Raspberry Pi. We have installed the newest version 5.4 Raspi. 
+Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Our aim is to write Epics Server for GPIB Device Control on Raspberry Pi. We have installed the newest raw version 5.4 Raspi. 
 
 All imgs are stored under "~/raspi_image" on dide17 for Backup.
    
