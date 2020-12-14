@@ -87,7 +87,7 @@ https://github.com/paulscherrerinstitute/StreamDevice
    https://www.slac.stanford.edu/grp/ssrl/spear/epics/site/asyn/devGpib.html
 https://github.com/paulscherrerinstitute/StreamDevice
       
-### Connection 
+## Connection 
 
 https://epics-controls.org/resources-and-support/documents/howto-documents/gpib-ports-linux-streamdevice/#STEP_3_Create_a_protocol_file
 
@@ -95,11 +95,11 @@ Changes in bashrc file:
 https://prjemian.github.io/epicspi/
 
 
-#### Change in Configure file:
+### Change in Configure file:(see steps.txt from lutz and materials from willam)
 
-change LINUX_GPIB=0 as LINUX_GPIB=YES
+#### change LINUX_GPIB=0 as LINUX_GPIB=YES
 
-Add command in st.cmd file: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
+#### Add command in st.cmd file: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 The boardindex must the same as the Interface board index in the gpib.conf file.
 
-# Board name "raspi_gpio_interface" in file "gpib.conf" is not allowed to be changed, in oder to be connected with the epics IOC.
+#### Board name "raspi_gpio_interface" in file "gpib.conf" is not allowed to be changed, in oder to be connected with the epics IOC.
