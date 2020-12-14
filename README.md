@@ -102,3 +102,4 @@ change LINUX_GPIB=0 as LINUX_GPIB=YES
 Add command in st.cmd file: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 The boardindex must the same as the Interface board index in the gpib.conf file.
 
+# "raspi_gpio_interface" in file "gpib.conf" is not allowed to be changed, in oder to be connected with the epics IOC.
