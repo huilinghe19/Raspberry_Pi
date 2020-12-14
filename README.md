@@ -19,7 +19,7 @@ All imgs are stored under "~/raspi_image" on dide17 for Backup.
        >>> gpib.write(device, b’*IDN?’)
        >>> gpib.read(device, 100)
 
-When I use Python to test the GPIB function, sending commands and getting the answers are OK. 
+When I use Python or python3 (without raspi-gpib installation)to test the GPIB function, sending commands and getting the answers are OK.  
 ## Install linux-gpib and raspi_gpib_driver.
 
 The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
