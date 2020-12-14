@@ -1,5 +1,7 @@
 # epics IOC for keithley 2000 
-gpib_test
+"gpib_test", it can be used to connect other gpib instruments with modifying just a few sentences in the IOC.
+
+
 
 # epics base, asyn, streamDevice are not here. 
 
