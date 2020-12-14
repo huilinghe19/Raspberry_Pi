@@ -47,8 +47,22 @@ change GPIB address
 
 
 # BIG PROBLEM: 
-1. can not change file content with jupyter-notebook and nano. 
-2. can not use apt upgrade to upgrade the system.(always broken after upgrading raspi, thanks to the Backup)
+1. Permission to change file content with jupyter-notebook. Use new editor idle.  
+2. it is dangerous to use "apt upgrade" to upgrade the system. it is always broken after upgrading raspi, thanks to the Backup. 
 
 # small problem: 
-add startup program for gpib
+add startup program for gpib 
+
+# GPIB INSTALLATION 
+## mount the GPIB 4.3.3 from dide17 to raspberry Pi. 
+   
+GPIB 4.3.3 original source is in the dide17: (as root) /hzb/raspberry/linux-gpib-4.3.3/
+
+aber we use GPIB on Raspberry Pi. 
+
+    >>> sudo mount -t nfs 192.168.1.2:hzb /mnt
+    >>> cd /mnt/raspberry/linux-gpib-4.3.3/
+    >>> make clean 
+    >>> make GPIB_DEBUG=1 VERBOSE=1 V=1
+    >>> make install
+    >>> ibterm -d 19 -N 
