@@ -72,9 +72,7 @@ def runApp():
         #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
         #with process.stdout:
         #       log_subprocess_output(process.stdout)
-        exitcode = process.wait() # 0 means success
-       
-
+        #exitcode = process.wait() # 0 means success
 
 @app.route('/openKeithley3000IOC', methods=['GET' ,'POST'])
 def open_keithley3000ioc():
@@ -90,7 +88,7 @@ def runApp():
         #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
         #with process.stdout:
         #       log_subprocess_output(process.stdout)
-	exitcode = process.wait()
+	#exitcode = process.wait()
 
 
 
