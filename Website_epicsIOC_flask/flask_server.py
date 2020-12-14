@@ -53,7 +53,7 @@ def open_index():
             #devices_dict = ServerGPIB.get_available_devices()
             result = ''
             print(reload_content)
-    print(reload_content)
+    #print(reload_content)
     return render_template('index.html',devices=devices_dict, result=result, reload_content=reload_content)
 
 
@@ -61,36 +61,33 @@ def open_index():
 @app.route('/openKeithley2000IOC', methods=['GET' ,'POST'])
 def open_keithley2000ioc():
     if request.method == 'POST' :
+        logging.info('keithley2000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
         runApp()
-        logging.info('open_keithley2000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
+        
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content)
 def runApp():
-        command_line_args = "./st.cmd"
-        process = subprocess.run(command_line_args, shell=True, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
-        output=process.stdout
-        logging.info('runApp: Keithley 2000 IOC is Started. {}'.format(time.asctime(time.localtime(time.time()))))
-        #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
-        #with process.stdout:
-        #       log_subprocess_output(process.stdout)
-        #exitcode = process.wait() # 0 means success
+    command_line_args = "./st.cmd"
+    process = subprocess.run(command_line_args, shell=True, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
+    output = process.stdout
+    logging.info('runApp: Keithley 2000 IOC is Started. {}'.format(time.asctime(time.localtime(time.time()))))
+    #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
+    #with process.stdout:
+    #       log_subprocess_output(process.stdout)
+    #exitcode = process.wait() # 0 means success
 
 @app.route('/openKeithley3000IOC', methods=['GET' ,'POST'])
 def open_keithley3000ioc():
     if request.method == 'POST' :
-            runApp()
-            logging.info('open_keithley3000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
+        logging.info('keithley3000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
+        runApp()
+            
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content)
 
 def runApp():
-        command_line_args = "./st.cmd"
-        process = subprocess.run(command_line_args, shell=True, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
-        output=process.stdout
-        #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
-        #with process.stdout:
-        #       log_subprocess_output(process.stdout)
-	#exitcode = process.wait()
-
-
+    command_line_args = "./st.cmd"
+    process = subprocess.run(command_line_args, shell=True, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
+    output = process.stdout
+       
 
 if __name__ == "__main__":    
     #app.run(host='134.30.36.95', port='8080', threaded=True)
