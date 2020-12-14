@@ -18,19 +18,20 @@ def copyTemplates(src, dst):
 
 
 
-def findContentFile():
-    with open("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "r", encoding="utf-8") as f:
+def findContentFile(src, content):
+    with open(src, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    with open("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "w", encoding="utf-8") as f_w:
+    with open(src, "w", encoding="utf-8") as f_w:
         for line in lines:
-            if "ADDR=19" in line:
+            if content in line:
                 line=line.replace(line, 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=20" ')
             
             f_w.write(line)
 
 if __name__== '__main__':
     copyTemplates("Templates/Keithley/keithley2000", "copyTemplatesDestination")
-    findContentFile()
+    findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=19")
+   
 
 
