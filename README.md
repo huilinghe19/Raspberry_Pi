@@ -1,20 +1,34 @@
 # Epics Server for GPIB on Raspberry Pi
 
 ## Aim
-Writing a Epics Server to connect GPIB Devices on Raspberry PI Platform 
+Writing a Epics Server to connect GPIB Devices (Example:keithley 2000 multimeter) on Raspberry PI Platform 
 ## Progress
-Have installed gpib server and epics server.  have wrote epics server for Keithley 2000, have got the voltage value of keithley 2000. The First Step is finished.
+Have installed gpib server and epics server.  have wrote a epics IOC "gpib_test" for Keithley 2000, have got the voltage value of keithley 2000. Have wrote a webserver to open Keithley 2000 epics IOC. 
 
 # Raspberry Pi
-Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Our aim is to write Epics Server for GPIB Device Control on Raspberry Pi. We have installed the newest version 5.4 Raspi. This img is also stored as "gpibworksBaseRaspi-20201203.img" under "~/raspi_image" for Backup.
+Raspberry Pi is a small functional linux computer. We would like to use it for the extra implementation for the experiment control due to its small size and functional property. On the Raspberry Pi we can get the GPIB Interface for the devices. Our aim is to write Epics Server for GPIB Device Control on Raspberry Pi. We have installed the newest raw version 5.4 Raspi(2020-08-20-raspios-buster-armhf-full.img). 
+
+All imgs are stored under "~/raspi_image" on dide17 for Backup.
    
 # GPIB Device support
-1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
+## Test how GPIB works. It works with Keithley 2000. (with python3, install gpib_ctypes) 
+    
+
+       >>> from gpib_ctypes import gpib
+       >>> device = gpib.dev(0,19)
+       >>> gpib.write(device, b’*IDN?’)
+       >>> gpib.read(device, 100)
+
+When I use Python or python3 (without raspi-gpib installation)to test the GPIB function, sending commands and getting the answers are OK.  
+## Install linux-gpib and raspi_gpib_driver.
+
+The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
 
 Information link:
 https://sourceforge.net/projects/linux-gpib/files/
 https://github.com/elektronomikon/raspi_gpib_driver
-Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link. Version 4.3.3 is installed. 
+
+###  Basic methods are:
       
        >>> cd ~/Downloads
        >>> mkdir HHL
@@ -28,19 +42,28 @@ Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link.
        >>> make 
        >>> sudo make install
        
-2. After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
-       
+###  Version 4.3.3 is installed with the following method from Lutz. Now this version is on the Raspi.
+
+#### Put the sources in dide17, mount it on raspberry pi and compile it. It saves the space of Raspi. 
+
+      >>> sudo mount -t nfs 192.168.1.2:hzb /mnt
+      >>> cd /mnt/raspberry/linux-gpib-4.3.3/linux-gpib-kernel-4.3.3
+      >>> make clean (in kernel linux-gpib-kernel-4.3.3, patch is already done in the source)
+      >>> make GPIB_DEBUG=1 VERBOSE=1 V=1
+      >>> make install
+      (do it again in linux-gpib-user-4.3.3)
+      
+#### After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
+
+       >>> sudo modprobe gpib_common
+       >>>sudo modprobe raspi_gpib
+       >>> sudo ldconfig
+       >>> sudo gpib_config 
        >>> ibterm -b 19 -N
        (Enter 2 times)
-       
-       
-3. python 3 test:
+       keithley .......
 
-       >>> from gpib_ctypes import gpib
-       >>> device = gpib.dev(0,19)
-       >>> gpib.write(device, b’*IDN?’)
-       >>> gpib.read(device, 100)
-      
+     
 # Epics Server 
 
 https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
@@ -64,7 +87,7 @@ https://github.com/paulscherrerinstitute/StreamDevice
    https://www.slac.stanford.edu/grp/ssrl/spear/epics/site/asyn/devGpib.html
 https://github.com/paulscherrerinstitute/StreamDevice
       
-### Connection 
+## Connection 
 
 https://epics-controls.org/resources-and-support/documents/howto-documents/gpib-ports-linux-streamdevice/#STEP_3_Create_a_protocol_file
 
@@ -72,10 +95,11 @@ Changes in bashrc file:
 https://prjemian.github.io/epicspi/
 
 
-Change in Configure file:
+### Change in Configure file:(see steps.txt from lutz and materials from willam)
 
-change LINUX_GPIB=0 as LINUX_GPIB=YES
+#### change LINUX_GPIB=0 as LINUX_GPIB=YES
 
-Add command in st.cmd file: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
+#### Add command in st.cmd file: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 The boardindex must the same as the Interface board index in the gpib.conf file.
 
+#### Board name "raspi_gpio_interface" in file "gpib.conf" is not allowed to be changed, in oder to be connected with the epics IOC.
