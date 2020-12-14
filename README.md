@@ -11,12 +11,22 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 All imgs are stored under "~/raspi_image" on dide17 for Backup.
    
 # GPIB Device support
-1. Test how GPIB works. It works with Keithley 2000. When I use Python to test the GPIB function, sending commands and getting the answers are OK. The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
+## Test how GPIB works. It works with Keithley 2000. (with python3) 
+    
+
+       >>> from gpib_ctypes import gpib
+       >>> device = gpib.dev(0,19)
+       >>> gpib.write(device, b’*IDN?’)
+       >>> gpib.read(device, 100)
+
+When I use Python to test the GPIB function, sending commands and getting the answers are OK. 
+## The old patch version of linux-gpib-4.1.0 for raspi-gpib_driver is no longer there. The other versions do not work well with Raspi Kernel 5.4. After several tries, we decide to install the newest 4.3.3 Version. 
 
 Information link:
 https://sourceforge.net/projects/linux-gpib/files/
 https://github.com/elektronomikon/raspi_gpib_driver
-Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link. Version 4.3.3 is installed. 
+
+### Install linux-gpib and raspi_gpib_driver. Basic methods are:
       
        >>> cd ~/Downloads
        >>> mkdir HHL
@@ -30,18 +40,26 @@ Install linux-gpib and raspi_gpib_driver. Complete code can be seen in the link.
        >>> make 
        >>> sudo make install
        
-2. After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
-       
+###  Version 4.3.3 is installed with the method from Lutz. 
+
+#### Put the sources in dide17, mount it on raspberry pi and compile it. It saves the space of Raspi. 
+
+      >>> sudo mount -t nfs 192.168.1.2:hzb /mnt
+      >>> cd /mnt/raspberry/linux-gpib-4.3.3/linux-gpib-kernel-4.3.3
+      >>> make clean (in kernel linux-gpib-kernel-4.3.3, patch is already done in the source)
+      >>> make GPIB_DEBUG=1 VERBOSE=1 V=1
+      >>> make install
+      
+#### After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
+
+       >>> sudo modprobe gpib_common
+       >>>sudo modprobe raspi_gpib
+       >>> sudo ldconfig
+       >>> sudo gpib_config 
        >>> ibterm -b 19 -N
        (Enter 2 times)
        
-       
-3. python 3 test:
 
-       >>> from gpib_ctypes import gpib
-       >>> device = gpib.dev(0,19)
-       >>> gpib.write(device, b’*IDN?’)
-       >>> gpib.read(device, 100)
       
 # Epics Server 
 
@@ -74,7 +92,7 @@ Changes in bashrc file:
 https://prjemian.github.io/epicspi/
 
 
-Change in Configure file:
+#### Change in Configure file:
 
 change LINUX_GPIB=0 as LINUX_GPIB=YES
 
