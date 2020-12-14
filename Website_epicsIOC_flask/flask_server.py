@@ -62,7 +62,7 @@ def open_index():
 def open_keithley2000ioc():
     if request.method == 'POST' :
         runApp()
-        logging.info('open_keithley3000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
+        logging.info('open_keithley2000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content)
 def runApp():
         command_line_args = "./st.cmd"
@@ -90,7 +90,7 @@ def runApp():
         #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
         #with process.stdout:
         #       log_subprocess_output(process.stdout)
-        exitcode = proce
+	exitcode = process.wait()
 
 
 
