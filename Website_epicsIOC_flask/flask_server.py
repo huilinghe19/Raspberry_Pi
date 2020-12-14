@@ -13,10 +13,13 @@ app = Flask(__name__)
 
 logging.basicConfig(filename="myapp.log", level=logging.INFO)
 
+### Old definition, may be used in future
 devices_dict = {}
 reload_content = {}
 result = ''
+###
 
+### old index, no effect except showing the links informationen, will be changed in future.
 @app.route('/', methods=['GET' ,'POST'])
 def open_index():
     global devices_dict;global reload_content;global result
@@ -56,14 +59,12 @@ def open_index():
     #print(reload_content)
     return render_template('index.html',devices=devices_dict, result=result, reload_content=reload_content)
 
-
-
+### Webpage for Keithley 2000
 @app.route('/openKeithley2000IOC', methods=['GET' ,'POST'])
 def open_keithley2000ioc():
     if request.method == 'POST' :
-        logging.info('keithley2000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
+        logging.info('open keithley2000 IOC... {}'.format(time.asctime(time.localtime(time.time()))))
         runApp()
-        
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content)
 def runApp():
     command_line_args = "./st.cmd"
@@ -75,19 +76,19 @@ def runApp():
     #       log_subprocess_output(process.stdout)
     #exitcode = process.wait() # 0 means success
 
+### Webpage for Keithley 3000, just for testing other devices in future 
 @app.route('/openKeithley3000IOC', methods=['GET' ,'POST'])
 def open_keithley3000ioc():
     if request.method == 'POST' :
-        logging.info('keithley3000ioc Started. {}'.format(time.asctime(time.localtime(time.time()))))
-        runApp()
-            
+        logging.info('open keithley3000 IOC... {}'.format(time.asctime(time.localtime(time.time()))))
+        runApp() 
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content)
-
 def runApp():
     command_line_args = "./st.cmd"
     process = subprocess.run(command_line_args, shell=True, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
     output = process.stdout
-       
+    logging.info('runApp: Keithley 3000 IOC is Started. {}'.format(time.asctime(time.localtime(time.time()))))
+
 
 if __name__ == "__main__":    
     #app.run(host='134.30.36.95', port='8080', threaded=True)
