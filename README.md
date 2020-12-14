@@ -1,7 +1,8 @@
-# Epics Server for GPIB on Raspberry Pi
+# Epics Server for GPIB Devices on Raspberry Pi
 
 ## Aim
-Writing a Epics Server to connect GPIB Devices (Example:keithley 2000 multimeter) on Raspberry PI Platform 
+Writing a Epics IOC to connect GPIB Devices (Example:keithley 2000 multimeter) on Raspberry PI Platform 
+
 ## Progress
 Have installed gpib server and epics server.  have wrote a epics IOC "gpib_test" for Keithley 2000, have got the voltage value of keithley 2000. Have wrote a webserver to open Keithley 2000 epics IOC. 
 
@@ -11,6 +12,7 @@ Raspberry Pi is a small functional linux computer. We would like to use it for t
 All imgs are stored under "~/raspi_image" on dide17 for Backup.
    
 # GPIB Device support
+
 ## Test how GPIB works. It works with Keithley 2000. (with python3, install gpib_ctypes) 
     
 
@@ -68,20 +70,21 @@ https://github.com/elektronomikon/raspi_gpib_driver
 
 https://epics.anl.gov/modules/bus/gpib/gpibCore/R1-1/gpib.html
 
-## Epics Base 
-base <https://epics-controls.org/resources-and-support/base/>
+## Epics Base
 
+base <https://epics-controls.org/resources-and-support/base/>
 ## Epics Support 
+
 ### asyn 
 
 <https://github.com/epics-modules/asyn>
-
 
 ### StreamDevice 
 
 https://github.com/paulscherrerinstitute/StreamDevice
 
 ### Extra Informations
+
    https://www.esrf.eu/files/live/sites/www/files/events/conferences/2011/ESRFUP-WP10-beamline-instrumentation-software/WP10-DIAMOND-AsynDriverEPICS.pdf
    
    https://www.slac.stanford.edu/grp/ssrl/spear/epics/site/asyn/devGpib.html
@@ -96,10 +99,7 @@ https://prjemian.github.io/epicspi/
 
 
 ### Change in Configure file:(see steps.txt from lutz and materials from willam)
-
 #### change LINUX_GPIB=0 as LINUX_GPIB=YES
-
 #### Add command in st.cmd file: GpibBoardDriverConfig(PortName, autoconnect, BoardIndex, timeout, priority) 
 The boardindex must the same as the Interface board index in the gpib.conf file.
-
 #### Board name "raspi_gpio_interface" in file "gpib.conf" is not allowed to be changed, in oder to be connected with the epics IOC.
