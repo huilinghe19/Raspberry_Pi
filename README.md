@@ -61,10 +61,8 @@ https://github.com/elektronomikon/raspi_gpib_driver
        >>> sudo gpib_config 
        >>> ibterm -b 19 -N
        (Enter 2 times)
-       keithley ........原始资源
-含义
-节约空间
-       
+       keithley .......
+
      
 # Epics Server 
 
