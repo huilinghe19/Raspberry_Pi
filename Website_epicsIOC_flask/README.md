@@ -19,18 +19,13 @@ In flask_server.py, the original index link / is still there. The index page sho
 
 >>> python3 flask_server.py
 
-There are 3 websites: (ip address of raspberry pi is: 192.168.1.101) 
+There are 2 websites: (ip address of raspberry pi is: 192.168.1.101) 
 
 http://192.168.1.101:8080
 
 http://192.168.1.101:8080/openKeithley2000IOC
 
-http://192.168.1.101:8080/openKeithley3000IOC (just for testing, has the same function with Keithley 2000)
 
-
-## Button on the websites: there is a button "start IOC" 
-
-http://192.168.1.101:8080/openKeithley2000IOC 
-
-we can press the button :"start IOC", then EPICS IOC for keithley 2000 is open. We can use "camonitor iocgpib:value" to get the voltage value.
+## Button on the websites: there is a button "Start IOC" 
+after input the address 19, press the button :"Start IOC", then EPICS IOC for keithley 2000 is open. We can use "camonitor iocgpib:value" to get the voltage value. Other addresses do not work. 
 
