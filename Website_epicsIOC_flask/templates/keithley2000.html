@@ -42,47 +42,21 @@
 		    </div>
 
 
-<form class="form-inline" method="POST" action="{{ url_for('openKeithley2000IOC') }}">
-  <div class="form-group">
-    <div class="input-group">
-        <span class="input-group-addon">Please select</span>
-            <select name="comp_select" class="selectpicker form-control">
-              {% for o in data %}
-              <option value="{{ o.address }}">{{ o.address }}</option>
-              {% endfor %}
-            </select>
-    </div>
-    <button type="submit" class="btn btn-default" name="getAddress" value="getAddress">Go</button>
-  </div>
-</form>
 
 
 
-
-
-		    
+{{ data }}		    
                     <ul class='list-group list-group-flush' style="height:30rem">
                         <!-- JS GENERATES ELEMENTS-->
                     </ul>
                     <div class='card-footer text-center' style="padding-right:0; padding-left:0">
-                        <form method='POST' style="margin-bottom: 0rem">
-                            <button class='btn btn-info' name="startIOC" value="startIOC" onclick="start_loading_animation(this)">
+                        <form method="POST"  style="margin-bottom: 0rem">
+                            <button  type="submit" class='btn btn-info' name="startIOC" value="startIOC"  onclick="start_loading_animation(this)">
                                Start IOC
                             </button>
                         </form>
                     </div>
-                
-                    
-
-
-
-
-
-
-
-
-
-		
+              		
 
 
                 </div>
