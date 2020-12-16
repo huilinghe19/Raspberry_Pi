@@ -1,5 +1,4 @@
-                            
-import os
+import os, sys, stat
 import shutil
 from pathlib import Path
 
@@ -22,9 +21,9 @@ def copyTemplates(src, dst):
 def choose_connection(input):
     connection_dict = {"EPICS_IOC":"iocgpib",
                        "GPIB_ADDRESS": "19",
-                       "connection": "GPIB",
+                       "CONNECTION": "GPIB",
                        }
-    if input == connection_dict["connection"]:
+    if input == connection_dict["CONNECTION"]:
        print("connect with GPIB")
        
        
@@ -42,27 +41,31 @@ def show_GPIBTemplates():
         print(str + ": Dir does not exist")
         
 def findContentFile(src, content_search, new_line):
+    changeFilePermission(src)
     with open(src, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     with open(src, "w", encoding="utf-8") as f_w:
         for line in lines:
             if content_search in line:
-                line=line.replace(line, new_line)
-            
+                line=line.replace(line, new_line)            
             f_w.write(line)
+def changeFilePermission(file):
+    os.chmod(file, stat.S_IXGRP)
+    os.chmod(file, stat.S_IWOTH)
+    
 def openIOC():
     print("open IOC")
 
 def main():
-    choose_connection("GPIB")
-    show_GPIBTemplates()
+    #choose_connection("GPIB")
+    #show_GPIBTemplates()
     templates_path = "Templates/Keithley/keithley2000"
     destination_path = "copyTemplatesDestination"
     copyTemplates(templates_path , destination_path)
-    findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=", 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=19"')
-    #findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/envPaths", 'epicsEnvSet("IOC" ', 'epicsEnvSet("IOC","keithley2000_test") ')
-    openIOC()
+    #findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=", 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=19"')
+    #findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/envPaths", '"IOC"', 'epicsEnvSet("IOC","keithley2000_test")')
+    #openIOC()
 
 if __name__== '__main__':
     main()    
