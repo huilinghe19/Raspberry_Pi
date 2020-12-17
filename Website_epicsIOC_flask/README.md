@@ -10,10 +10,10 @@ In other systems, install flask with "apt install python3-flask python3-flask-ap
 
 ## website with HTML
 
-I habe used just one index.html file under "Webserver/templates". This html comes from jördis index.html originally. But I have deleted all other irrelevant things except a button and a block to show some sentences. css js bootstrap (such things of format) are also not included. In the future I will add somethings to complete the whole functions. 
+I habe used an index.html file under "Webserver/templates". This html comes from jördis index.html originally. But I have deleted all other irrelevant things except a button and a block to show some sentences. css js bootstrap (such things of format) are also not included. In the future I will add somethings to complete the whole functions. 
 
 ## flask script
-In flask_server.py, the original index link / is still there. The index page shows the informations about how we can get the IOC with links. The button in the index page has no effect.  Other links like /openKeithley2000IOC are used to open IOC.
+In flask_server.py, The index page shows the informations about how we can get the IOC with address. 
 
 ## open webserver with PYTHON scripts
 
@@ -27,5 +27,5 @@ http://192.168.1.101:8080/openKeithley2000IOC
 
 
 ## Button on the websites: there is a button "Start IOC" 
-after input the address 19, press the button :"Start IOC", then EPICS IOC for keithley 2000 is open. We can use "camonitor iocgpib:value" to get the voltage value. Other addresses do not work. 
+after input the address 19, press the button :"Start IOC", then EPICS IOC for keithley 2000 is open. We can use "camonitor iocgpib:value" to get the voltage value. Other addresses do not work. The error message will be shown after starting the python scripts in terminal. 
 
