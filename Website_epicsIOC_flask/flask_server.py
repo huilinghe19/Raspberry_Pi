@@ -8,7 +8,8 @@ import time
 import subprocess
 from subprocess import Popen, PIPE, STDOUT
 import logging
-
+import shutil
+from pathlib import Path
 
 #SECRET_KEY = 'development'
 app = Flask(__name__)
@@ -49,21 +50,18 @@ def openKeithley2000IOC():
         if 'action' in request.form:
             if request.form['action'] == 'getAddress':
                 print("get Address {}".format(address))
-                #configureIOCfiles(address)
+                src = "/home/pi/Templates/Keithley/keithley2000"
+                dst = "/tmp/newIOC"
+                copyTemplates(src , dst)
+                file_path = src + "/gpib_test/iocBoot/iocgpib/st.cmd"
+                
+                changePermission(file_path)
+                content_search = "ADDR="
                 new_line = 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=%s"' % str(address)
-                print(new_line)
-                findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=", new_line)
-                runApp(address)
-                #new_line = 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR={}"'.format(str(address))
-                #findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=", new_line)
-                #return render_template('keithley2000.html', data=str(address), devices=devices_dict, result=result, reload_content=reload_content)
-                #new_line = 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR={}"'.format(address)
-                #file = "/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd"
-                #os.chmod(file, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR )
-                #os.chmod(file, stat.S_IXGRP)
-                #os.chmod(file, stat.S_IWOTH)
-                #findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=", new_line)
-                #return render_template('keithley2000.html', data=str(address), devices=devices_dict, result=result, reload_content=reload_content)
+                changeContent(file_path, content_search, new_line)
+                print("change file: {}".format(file_path))
+                runApp(address, dst)  
+            
             #if request.form['action'] == 'startIOC':
                 #address = request.form.get('comp_select')
                 #print(" Address {}".format(address))
@@ -71,22 +69,23 @@ def openKeithley2000IOC():
                 #print("start IOC")
                 #runApp(address)                
     return render_template('keithley2000.html', data=str(address), devices=devices_dict, result=result, reload_content=reload_content)
-def runApp(address):
+def runApp(address, dst):
     print("start IOC")
-    print(str(address))
     logging.info('runApp: openKeithley2000IOC. {}'.format(time.asctime(time.localtime(time.time()))))
     command_line_args = "./st.cmd"
-    process = subprocess.run(command_line_args, shell=True, cwd="/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib")
+    path = dst + "/gpib_test/iocBoot/iocgpib"
+    process = subprocess.run(command_line_args, shell=True, cwd=path)
     output = process.stdout
     #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd="/home/pi/gpib_test/iocBoot/iocgpib")
     #with process.stdout:
            #log_subprocess_output(process.stdout)
     #exitcode = process.wait() # 0 means success
-def configureIOCfiles(address):
-    new_line = 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=%s"' % str(address)
-    print(new_line)
-    findContentFile("/home/pi/copyTemplatesDestination/gpib_test/iocBoot/iocgpib/st.cmd", "ADDR=", new_line)
-def findContentFile(src, content_search, new_line):
+
+    
+def changeContent(src, content_search, new_line):
+    #os.chmod(src, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR )
+    #os.chmod(src, stat.S_IXGRP)
+    #os.chmod(src, stat.S_IWOTH)
     with open(src, "r", encoding="utf-8") as f:
         lines = f.readlines()
     with open(src, "w", encoding="utf-8") as f_w:
@@ -94,7 +93,16 @@ def findContentFile(src, content_search, new_line):
             if content_search in line:
                 line=line.replace(line, new_line)            
             f_w.write(line)
-
+            
+def copyTemplates(src, dst):
+    shutil.copytree(src, dst)      
+    print("src: {} is copied in dst: " ) 
+def removeDestinationDir(dst):
+    os.removedirs(dst)
+    
+def changePermission(src):
+    shutil.chown(src, user="pi", group="pi")
+    os.chmod(src, stat.S_IRUSR+stat.S_IWUSR+stat.S_IXUSR+stat.S_IRGRP+stat.S_IWGRP+stat.S_IXGRP)
 
 
 ### Webpage for Keithley 3000, just for testing other devices in future 
