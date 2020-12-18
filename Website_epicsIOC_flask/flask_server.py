@@ -35,16 +35,22 @@ def test():
 
 
 @app.route('/',methods=['GET' ,'POST'])
-def open_index():  
+def open_index():
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content, 
 	data=[{'address':'19'}, {'address':'1'},{'address':'2'}, {'address':'3'}, {'address':'4'}, {'address':'5'}, 
 {'address':'6'}, {'address':'7'},  {'address':'8'}, {'address':'9'}, {'address':'10'}, {'address':'11'},  {'address':'12'}, {'address':'13'}, {'address':'14'},
  {'address':'15'},  {'address':'16'}, {'address':'17'}, {'address':'18'}, {'address':'20'}, {'address':'21'}, {'address':'22'},
  {'address':'23'},  {'address':'24'}, {'address':'25'}, {'address':'26'}, {'address':'27'},  {'address':'28'}, {'address':'29'}, {'address':'30'}, {'address':'31'}])
+
+
 ### Webpage for Keithley 2000
 @app.route('/openKeithley2000IOC', methods=['GET', 'POST'])
 def openKeithley2000IOC():
     address = request.form.get('comp_select')
+    pvname = request.form['pvname']
+    #r = requests.get(url)
+    #print(r.text)
+
     if request.method == 'POST' :
         print(request.form)
         if 'action' in request.form:
@@ -54,11 +60,25 @@ def openKeithley2000IOC():
                 dst = "/tmp/newIOC"
                 copyTemplates(src , dst)
                 file_path = src + "/gpib_test/iocBoot/iocgpib/st.cmd"
-                
                 changePermission(file_path)
                 content_search = "ADDR="
-                new_line = 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=%s"' % str(address)
+                new_line = 'dbLoadRecords "db/yourdev.db", "P=${IOC}:,PORT=$(Port),ADDR=%s"\n' % str(address)
                 changeContent(file_path, content_search, new_line)
+
+                file2 = dst + "/gpib_test/iocBoot/iocgpib/envPaths"
+                changePermission(file2)
+                line2 = 'epicsEnvSet("IOC",%s)\n' % pvname
+                content2 = "IOC"
+                changeContent(file2, content2, line2)
+
+                file3 = dst + "/gpib_test/iocBoot/iocgpib/envPaths"
+                top_path = dst + "/gpib_test"
+                changePermission(file3)
+                line3 = 'epicsEnvSet("TOP", %s)\n' % top_path
+                content3 = "TOP"
+                changeContent(file3, content3, line3)
+
+                
                 print("change file: {}".format(file_path))
                 runApp(address, dst)  
             
