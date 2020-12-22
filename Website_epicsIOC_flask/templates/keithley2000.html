@@ -31,29 +31,33 @@
                         <b>Available Devices IOC</b> 
                         <br/>
                         <hr style="margin-top: 0.5rem; margin-bottom: 0rem"> 
-		
+			<p>
+                        <b> </b>
+                        </p>	
 		    </div>
 
 
 
+<form class="form-inline" method="POST" action="{{ url_for('result')}}">
+  <div class="form-group">
+    <div class="input-group">
+        <span class="input-group-addon">GPIB Address:</span>
+        {{ data }} 
+    </div>
+
+<div class="input-text">
+<label for="pvname">PV Name: </label>
+{{ name }}
+</div>
+
+<button type="submit" class="btn btn-default" name="action" value="startIOC" onclick="start_loading_animation(this)">Start IOC</button>
+  </div>
+</form>
 
 
-{{ data }}		    
-                    <ul class='list-group list-group-flush' style="height:30rem">
-                        <!-- JS GENERATES ELEMENTS-->
-                    </ul>
-                    <div class='card-footer text-center' style="padding-right:0; padding-left:0">
-                        <form method="POST"  style="margin-bottom: 0rem">
-                            <button  type="submit" class='btn btn-info' name="action" value="startIOC"  onclick="start_loading_animation(this)">
-                               Do nothing
-                            </button>
-                        </form>
-                    </div>
-              		
 
 
-                </div>
-             
+
        
 
         <!--js for bootstrap-->
