@@ -1,12 +1,24 @@
 # Webserver on Raspberry Pi (GPIB and EPICS SERVER INSTALLED)
 In oder to give more possibilities to use device servers, flask web server comes into our sight. After opening a website, the devices informations can be changed and configured. In the end, the device IOC can be started with a button directly. It is very simple for those who are not familiar with the device IOCs. 
 
+#Usage
+## INSTALL flask 
 
-# Method with flask
+flask and related packages are already in Raspberry Pi. Super! In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe something else should be installed to satisfy your needs.
 
-flask and related packages are already in Raspberry Pi. Super!
+## Download the whole repository
+    git clone https://github.com/huilinghe19/Raspberry_Pi.git
+    cd Raspberry_Pi
+    sudo python3 flask_server.py
+    
+## Open the website: http://192.168.1.101:8080
 
-In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe something else should be installed to satisfy your needs.
+  if the host is different, then you can change the host in the "flask_server.py". Of courese, you can also use following commands to open the flask server.
+   
+    export FLASK_APP=flask_server
+    flask run --host=0.0.0.0
+
+
 
 ## website with HTML
 
