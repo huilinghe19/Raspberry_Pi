@@ -22,10 +22,7 @@ flask and related packages are already in Raspberry Pi. Super! In other systems,
 
 ## website with HTML
 
-I habe used an index.html file under "Webserver/templates". This html comes from jördis index.html originally. But I have deleted all other irrelevant things except a button and a block to show some sentences. css js bootstrap (such things of format) are also not included. In the future I will add somethings to complete the whole functions. 
-
-## flask script
-In flask_server.py, The index page shows the informations about how we can get the IOC with address. 
+ all html pages should be put under /templates. It has such a stucture.
 
 ## open webserver with PYTHON scripts
 
@@ -35,7 +32,7 @@ There are 2 websites: (ip address of raspberry pi is: 192.168.1.101)
 
 http://192.168.1.101:8080
 
-http://192.168.1.101:8080/openKeithley2000IOC
+http://192.168.1.101:8080/configure
 
 
 ## Button on the websites: there is a button "Start IOC" 
