@@ -9,10 +9,8 @@ import subprocess
 from subprocess import Popen, PIPE, STDOUT
 import logging
 
-
 #SECRET_KEY = 'development'
 app = Flask(__name__)
-
 logging.basicConfig(filename="myapp.log", level=logging.INFO)
 
 ### Old definition, may be used in future
@@ -29,34 +27,39 @@ address_list = [{'address':'19'}, {'address':'1'},{'address':'2'}, {'address':'3
  {'address':'23'},  {'address':'24'}, {'address':'25'}, {'address':'26'}, {'address':'27'},  {'address':'28'}, {'address':'29'}, {'address':'30'}, {'address':'31'}]
 
 
-
-
-
 @app.route('/',methods=['GET' ,'POST'])
 def open_index():
     return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content, data=address_list)
 
-
-### Webpage for Keithley 2000
-@app.route('/openKeithley2000IOC', methods=['GET', 'POST'])
-def openKeithley2000IOC():
+### Configure the address and pv name
+@app.route('/configure', methods=['GET', 'POST'])
+def configure():
     address_input = request.form.get('comp_select')
     pvname_input = request.form['pv_name']
     if pvname_input:
-        print("pvname: ", pvname_input)
-    
+        print("pvname: ", pvname_input)    
         if request.method == 'POST':
             print(request.form)
             if 'action' in request.form:
                 if request.form['action'] == 'getAddress':
-                    logging.info('get address {}, pv name {}, {}'.format(address_input, pvname_input, time.asctime(time.localtime(time.time()))))
-                    print("get Address {}".format(address_input))
-                    dst = DST
-                    src = SRC
-                    configure_parameters = {"address": address_input, "pvname": pvname_input}
-                    copyTemplates(src, dst)
-                    configure(configure_parameters, dst)          
-                    runApp(dst)
+                    try:
+                        logging.info('get address {}, pv name {}, {}'.format(address_input, pvname_input, time.asctime(time.localtime(time.time()))))
+                        print("get Address {}".format(address_input))
+                        dst = DST
+                        src = SRC
+                        configure_parameters = {"address": address_input, "pvname": pvname_input}
+                        copyTemplates(src, dst)
+                        configure(configure_parameters, dst)
+                        print("Configure Done")
+                        #runApp(dst)
+                    except:
+                        render_template('error.html')
+                else:
+                    return("NO action: getAddress")
+            else:
+                return("NO action")
+        else:
+            return("No POST method")
                     
     else:
         logging.info('PV Name: NO INPUT. {}'.format(address_input, pvname_input, time.asctime(time.localtime(time.time()))))
@@ -75,8 +78,7 @@ def configure(parameter_dict, dst):
             pass
             
 def configureAddress(address, dst):
-    print("configureAddress: ", address)
- 
+    print("configureAddress: ", address) 
     file_path = dst + "/gpib_test/iocBoot/iocgpib/st.cmd"
     changePermission(file_path)
     content_search = "ADDR="
@@ -84,8 +86,7 @@ def configureAddress(address, dst):
     changeContent(file_path, content_search, new_line)
     
 def configurePV(pvname, dst):
-    print("configurePV: ", pvname)
- 
+    print("configurePV: ", pvname) 
     file2 = dst + "/gpib_test/iocBoot/iocgpib/envPaths"
     changePermission(file2)
     line2 = 'epicsEnvSet("IOC",%s)\n' % pvname
@@ -122,16 +123,46 @@ def changeContent(src, content_search, new_line):
             f_w.write(line)
             
 def copyTemplates(src, dst):
-    shutil.rmtree(dst)
+    if Path(dst).is_dir():
+        shutil.rmtree(dst)
     shutil.copytree(src, dst)      
-    print("src: is copied in dst: " ) 
+    print("src is copied in dst " ) 
     
 def changePermission(src):
     shutil.chown(src, user="pi", group="pi")
     os.chmod(src, stat.S_IRUSR+stat.S_IWUSR+stat.S_IXUSR+stat.S_IRGRP+stat.S_IWGRP+stat.S_IXGRP)
 
+@app.route('/result', methods=['GET', 'POST'])
+def result():
+    dst = DST
+    print(request.form)
+    if request.method == 'POST':
+        print(request.form)
+        if 'action' in request.form:
+            if request.form['action'] == 'startIOC':
+                result= "ok"
+                try:
+                    runApp(dst)
+                except:
+                    render_template('error.html')
+            else:
+                return("NO action: startIOC")
+        else:
+                return("NO action")
+    
+    return render_template('result.html', devices=devices_dict, result=result, reload_content=reload_content )
+def runApp(dst):
+    print("start IOC")
+    logging.info('runApp: openKeithley2000IOC. {}'.format(time.asctime(time.localtime(time.time()))))
+    command_line_args = "./st.cmd"
+    path = dst + "/gpib_test/iocBoot/iocgpib"
+    process = subprocess.run(command_line_args, shell=True, cwd=path)
+    output = process.stdout
+    #process = Popen(command_line_args, stdout=PIPE, stderr=STDOUT, cwd=path)
+    #with process.stdout:
+           #log_subprocess_output(process.stdout)
+    #exitcode = process.wait() # 0 means success
+    
 
-
-if __name__ == "__main__":
-    #app.run(host='134.30.36.95', port='8080', threaded=True)
+if __name__ == "__main__":    
     app.run(host='192.168.1.101', port='8080', threaded=True)
