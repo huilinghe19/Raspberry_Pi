@@ -27,6 +27,6 @@ http://192.168.1.101:8080/openKeithley2000IOC
 
 
 ## Button on the websites: there is a button "Start IOC" 
-after choosing the address 19 and writing the pv name, press the button :"Start IOC", then EPICS IOC for keithley 2000 is open. We can use "camonitor {pvname}:value" to get the voltage value. Other addresses do not work. The error messages with other addresses will be shown after starting the python scripts in terminal, just like epics ioc error messages
+after choosing the address 19 and writing the pvname, press the button :"Start IOC", then EPICS IOC for keithley 2000 is open. We can use "camonitor {pvname}:value" to get the voltage value. Other addresses do not work. The error messages with other addresses will be shown after starting the python scripts in terminal, just like epics ioc error messages
 
 
