@@ -13,7 +13,7 @@ flask and related packages are already in Raspberry Pi. Super! In other systems,
     
 ## Open the website: http://192.168.1.101:8080
 
-  if the host is different, then you can change the host in the "flask_server.py". Of courese, you can also use following commands to open the flask server.
+  The ip address of the raspberry pi which I use is: 192.168.1.101. if the host is different, then you can change the address in the "flask_server.py". Of courese, you can also use following commands to open the flask server.
    
     export FLASK_APP=flask_server
     flask run --host=0.0.0.0
