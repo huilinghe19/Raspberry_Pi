@@ -7,7 +7,10 @@ try to use flask with docker to deploy the small project( to start epics IOC wit
     sudo apt install gunicorn3
     sudo apt install python3-gevent
     gunicorn3 flask_server:app -c gunicorn.conf.py
-    
+## install docker 
+    $ curl -fsSL https://get.docker.com -o get-docker.sh
+    $ sudo sh get-docker.sh
+    (wait for a few minites and then log out)
 # Usage
 ## INSTALL flask 
 flask and related packages are already in Raspberry Pi. Super! In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe something else should be installed to satisfy your needs.
