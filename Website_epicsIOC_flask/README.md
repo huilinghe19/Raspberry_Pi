@@ -6,6 +6,7 @@ try to use flask with docker to deploy the current small project( to start epics
 ## Gunicorn + Gevent     
     sudo apt install gunicorn3
     sudo apt install python3-gevent
+    sudo nano gunicorn.conf.py
     gunicorn3 flask_server:app -c gunicorn.conf.py  
     (has same function as "python3 flask_server.py")
     
@@ -13,6 +14,18 @@ try to use flask with docker to deploy the current small project( to start epics
     $ curl -fsSL https://get.docker.com -o get-docker.sh
     $ sudo sh get-docker.sh
     (wait for a few minites and then log out)
+## docker image
+    $ cd app
+    $ sudo nano requirements.txt
+    $ sudo nano Dockerfile
+    $ sudo docker build -t project:latest .
+    ......(wait for some minites)
+    $ sudo docker images
+    REPOSITORY  TAG     IMAGE ID      CREATED       SIZE
+    project   latest  54a47d0c27cf  12 seconds ago  941MB
+    
+    Then there is a Problem with "sudo docker run ....." because of the gunicorn3 exec paths.   
+    
 # Usage
 ## INSTALL flask 
 flask and related packages are already in Raspberry Pi. Super! In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe something else should be installed to satisfy your needs.
