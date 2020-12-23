@@ -2,7 +2,7 @@
 In oder to give more possibilities to use device servers, flask web server comes into our sight. After opening a website, the devices informations can be changed and configured. In the end, the device IOC can be started with a button directly. It is very simple for those who are not familiar with the device IOCs.
 
 # Current work
-try to use flask with docker to deploy the small project(just start epics IOC with GPIB address and pv name). JUST TRY.
+try to use flask with docker to deploy the small project( to start epics IOC with GPIB address and pv name). JUST TRY DOCKER USAGE.
 
 # Usage
 ## INSTALL flask 
