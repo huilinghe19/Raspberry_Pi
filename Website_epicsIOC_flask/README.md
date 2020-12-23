@@ -3,7 +3,11 @@ In oder to give more possibilities to use device servers, flask web server comes
 
 # Current work
 try to use flask with docker to deploy the small project( to start epics IOC with GPIB address and pv name). JUST TRY DOCKER USAGE.
-
+## Gunicorn + Gevent     
+    sudo apt install gunicorn3
+    sudo apt install python3-gevent
+    gunicorn3 flask_server:app -c gunicorn.conf.py
+    
 # Usage
 ## INSTALL flask 
 flask and related packages are already in Raspberry Pi. Super! In other systems, install flask with "apt install python3-flask python3-flask-api" or  "pip install --upgrade Flask". Maybe something else should be installed to satisfy your needs.
