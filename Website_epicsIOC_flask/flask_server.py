@@ -3,7 +3,7 @@ import os, sys, stat
 import time
 import shutil
 from pathlib import Path
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, make_response
 import binascii #needed for encoding, decoding hex to ascii/ ascii to hex
 import subprocess
 from subprocess import Popen, PIPE, STDOUT
@@ -26,10 +26,37 @@ address_list = [{'address':'19'}, {'address':'1'},{'address':'2'}, {'address':'3
  {'address':'15'},  {'address':'16'}, {'address':'17'}, {'address':'18'}, {'address':'20'}, {'address':'21'}, {'address':'22'},
  {'address':'23'},  {'address':'24'}, {'address':'25'}, {'address':'26'}, {'address':'27'},  {'address':'28'}, {'address':'29'}, {'address':'30'}, {'address':'31'}]
 
+#items = [dict(name='*', description='test'),
+             #dict(name=' ', description='test1'),
+             #dict(name='*', description='test2')]
+#items_templates = [dict(description='Keithley2000'),
+             #dict(description='keithley3000')]
+
+def getTemplates():
+    file_dir = "/home/pi/Templates/Keithley"
+    list_dir = os.listdir(file_dir)
+    items_templates = []
+    for i in list_dir:
+        item = dict(description=i)
+        items_templates.append(item)
+    return items_templates
+
+def getConfiguredIOC():
+    file_dir = "/home/pi/ConfiguredIOC"
+    list_dir = os.listdir(file_dir)
+    items_list = []
+    for i in list_dir:
+        item = dict(name='*', description=i)
+        items_list.append(item)
+    return items_list
+      
 
 @app.route('/',methods=['GET' ,'POST'])
 def open_index():
-    return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content, data=address_list)
+    headers = [' ', 'IOC']
+    headers_templates = [' ','Templates' ]
+    return render_template('index.html', devices=devices_dict, result=result, reload_content=reload_content, data=address_list,
+                           headers = headers, objects = getConfiguredIOC(), headers_templates = headers_templates, objects_templates = getTemplates())
 
 ### Configure the address and pv name
 @app.route('/configure', methods=['GET', 'POST'])
@@ -47,11 +74,13 @@ def configure():
                         print("get Address {}".format(address_input))
                         dst = DST
                         src = SRC
-                        configure_parameters = {"address": address_input, "pvname": pvname_input}
+                        configure_parameters = {"address": str(address_input), "pvname": str(pvname_input)}
                         copyTemplates(src, dst)
+                        print("copyTemplates")
                         configure(configure_parameters, dst)
                         print("Configure Done")
                         #runApp(dst)
+                        print("app is run")
                     except:
                         render_template('error.html')
                 else:
@@ -86,6 +115,7 @@ def configureAddress(address, dst):
     changeContent(file_path, content_search, new_line)
     
 def configurePV(pvname, dst):
+    print("pvname input: ", pvname)
     print("configurePV: ", pvname) 
     file2 = dst + "/gpib_test/iocBoot/iocgpib/envPaths"
     changePermission(file2)
@@ -162,7 +192,13 @@ def runApp(dst):
     #with process.stdout:
            #log_subprocess_output(process.stdout)
     #exitcode = process.wait() # 0 means success
+
+@app.route('/<page_name>')
+def other_page(page_name):
+    response = make_response(render_template('error.html'), 404)
+    return response
+
     
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     app.run(host='192.168.1.101', port='8080', threaded=True)
