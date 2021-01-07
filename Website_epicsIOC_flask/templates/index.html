@@ -8,8 +8,19 @@
         <!--
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+              
         -->
-        <!--FONT_AWESOME-->
+
+        
+      <!--FONT_AWESOME-->
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" 
               integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
 
@@ -21,20 +32,133 @@
             console.log(request_json)
 
         </script>
+
+       
+
+       
+
+        
     </head>
     <body>
-        <div class='container-fluid mx-2 my-4'>
-            <div class='row'>
-                <!--Your Devices-->
-                <div class='card  mx-4' style='width:26rem; max-height: 39rem'>
-                    <div class='card-header'>
-                        <b>Available Devices IOC</b> 
-                        <br/>
-                        <hr style="margin-top: 0.5rem; margin-bottom: 0rem"> 
-			<p>
-                        <b> </b>
-                        </p>	
-		    </div>
+
+
+
+<table style="border:1px solid black;">
+<tr>
+<th style="border:1px solid black;">Availbe IOCs </th><th style="border:1px solid black;">selected IOC Info</th>
+</tr>
+<tr>
+<td style="border:1px solid black;">
+
+{% if objects %}
+  <table id='result' class='display'>
+    <thead>
+      <tr>
+      {% for header in headers %}
+        <th>{{header}}</th>
+      {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+    {% for object in objects %} 
+      <tr>
+    {% for k, val in object.items() %}
+        <td>{{val}}</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}        
+    </tbody>
+  </table>
+{% endif %}
+
+
+
+
+
+</td><td style="border:1px solid black;">
+
+
+<div class='card-footer text-center' style="padding-right:0; padding-left:0">
+                        <form method='post' name='list' style="margin-bottom: 0rem">
+                            <button class='btn btn-info' onclick="start_loading_animation(this)">
+                               Stop
+                            </button>
+                        </form>
+                    </div>
+
+                  
+                    <div class='card-footer text-center' style="padding-right:0; padding-left:0">
+                        <form method='post' name='list' style="margin-bottom: 0rem">
+                            <button class='btn btn-info' onclick="start_loading_animation(this)">
+                                Remove
+                            </button>
+                        </form>
+                    </div>
+                   </td>
+</tr>
+
+
+
+<tr>
+<td style="border:1px solid black;">
+
+{% if objects %}
+  <table id='result' class='display'>
+    <thead>
+      <tr>
+      {% for header in headers_templates %}
+        <th>{{header}}</th>
+      {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+    {% for object in objects_templates %} 
+      <tr>
+    {% for k, val in object.items() %}
+        <td>{{val}}</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}        
+    </tbody>
+  </table>
+{% endif %}
+
+
+
+
+
+</td><td style="border:1px solid black;">Info-Templates
+<div class='card-footer text-center' style="padding-right:0; padding-left:0">
+                        <form method='post' name='list' style="margin-bottom: 0rem">
+                            <button class='btn btn-info' onclick="start_loading_animation(this)">
+                               New
+                            </button>
+                        </form>
+                    </div>
+
+</td>
+</tr>
+
+
+
+
+
+<tr>
+<td style="border:1px solid black;">
+
+<table>
+<b>adding new devices</b>
+
+ <br/>
+
+                        <hr style="margin-top: 0.5rem; margin-bottom: 0rem">  
+
+                        <label for="device_name">Device Name: </label>
+                        <input type="text" id="newdev" name="newdev" value="newdev">
+                
+                   
 
 
 <form class="form-inline" method="POST" action="{{ url_for('configure')}}">
@@ -49,7 +173,7 @@
             </select>
     </div>
 
-
+</div>
 <div class="input-text">
 <label for="pvname">PV Name: </label>
 <input type="text" id="pv_name" name="pv_name" value="iocgpib">
@@ -58,13 +182,25 @@
 
 </div>
 
+
 <button type="submit" class="btn btn-default" name="action" value="getAddress">Configure</button>
   </div>
 </form>
 
 
+     </div>
+     </table>
 
-       
+
+
+</td><td style="border:1px solid black;">Info2</td>
+</tr>
+</table>
+
+
+
+            
+
 
         <!--js for bootstrap-->
 
