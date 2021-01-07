@@ -1,7 +1,24 @@
 # Webserver on Raspberry Pi (GPIB and EPICS SERVER INSTALLED)
 In oder to give more possibilities to use device servers, flask web server comes into our sight. After opening a website, the devices informations can be changed and configured. In the end, the device IOC can be started with a button directly. It is very simple for those who are not familiar with the device IOCs.
 
-# Current work: FLASK with Docker Img
+# activate virtual environment
+
+            (python3 -m venv flask-env)    ## build a flask-env
+
+            source flask-env/bin/activate   ## open flask-env
+
+            pip install requests 
+            
+            pip install wheel
+            
+            pip install flask
+
+            pip list
+            
+            python3 flask_server.py
+
+
+# FLASK with Docker Img
 try to use flask with docker to deploy the current small project( to start epics IOC with GPIB address and pv name). JUST TRY DOCKER USAGE.
 ## Gunicorn + Gevent     
     sudo apt install gunicorn3
