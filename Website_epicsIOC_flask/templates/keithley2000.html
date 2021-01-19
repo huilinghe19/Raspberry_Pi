@@ -28,15 +28,13 @@
                 <!--Your Devices-->
                 <div class='card  mx-4' style='width:26rem; max-height: 39rem'>
                     <div class='card-header'>
-                        <b>Available Devices IOC</b> 
+                        <b>Adding a new IOC</b> 
                         <br/>
                         <hr style="margin-top: 0.5rem; margin-bottom: 0rem"> 
 			<p>
                         <b> </b>
                         </p>	
 		    </div>
-
-
 
 <form class="form-inline" method="POST" action="{{ url_for('result')}}">
   <div class="form-group">
@@ -51,6 +49,7 @@
 </div>
 
 <button type="submit" class="btn btn-default" name="action" value="startIOC" onclick="start_loading_animation(this)">Start IOC</button>
+<button type="submit" class="btn btn-default" name="action" value="stopIOC" onclick="start_loading_animation(this)">Stop IOC</button>
   </div>
 </form>
 
