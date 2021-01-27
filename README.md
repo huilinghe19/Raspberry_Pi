@@ -58,12 +58,18 @@ https://github.com/elektronomikon/raspi_gpib_driver
 #### After installing linux-gpib and raspi patch packages. we can use ibtest and ibterm to test the gpib. 19 is the address of the GPIB device. 
 
        >>> sudo modprobe gpib_common
-       >>>sudo modprobe raspi_gpib
+       >>> sudo modprobe raspi_gpib
        >>> sudo ldconfig
        >>> sudo gpib_config 
-       >>> ibterm -b 19 -N
-       (Enter 2 times)
+       >>> ibterm -d 19 -N(with keithley 2000)
+        (Enter 2 times)
        keithley .......
+       ###
+       >>> ibterm -d 15(with keithley 2001)
+       ###
+       ###
+       >>> ibterm -d 19(with keithley 6517)
+       ###
 
      
 # Epics Server 
