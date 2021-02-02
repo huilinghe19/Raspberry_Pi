@@ -1,0 +1,309 @@
+<html lang='en'>
+    <head>
+        <title>GPIB Controller with Raspberry Pi</title>
+        <meta charset='utf-8'>
+
+        <!--BOOTSTRAP-->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        
+        <script>window.jQuery || document.write('<script src="{{url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
+        <link rel="icon" href="data:,">
+        <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css"></link> 
+    
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles/multi-select.css")}}">
+  <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css"></link>
+ <link rel="stylesheet" type="text/css" href="../css/multi-select.css">
+  <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles/style.css")}}">
+        
+      <!--FONT_AWESOME-->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" 
+              integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+
+        <script> 
+             
+            device_json = JSON.parse('{{devices | tojson}}')
+            request_json = JSON.parse('{{reload_content | tojson}}')
+            console.log(device_json)
+            console.log(request_json)
+
+        </script>
+
+       
+
+       
+
+        
+    </head>
+    <body>
+
+<div style="position:absolute; left:30%">
+
+<table style="border:1px solid black;">
+
+<tr>
+<th>Configured IOCs </th><th>Selected IOC Info</th>
+</tr>
+<tr style="height:410px">
+<td style="border:1px; width:400px; height:400px">
+<form class="form" action="" method="POST">
+<select multiple style="width:300px; height:300px" name="configuredIOC" id="configuredIOC" method="GET">
+ {% for object in objects %}
+    {% for k, val in object.items() %}
+ 
+        <option value="{{val}}" name="{{val}}" id="{{val}}">{{val}}</option>"
+   
+
+        
+      {% endfor %}
+    {% endfor %}        
+
+</select>
+</form>
+
+</td><td style=
+"border:1px; width:400px; height:400px">
+ <form method="POST" action="">
+ 
+
+
+  <table id="demo"></table>
+
+
+
+</form>
+
+</td>
+
+
+</tr>
+
+
+<tr>
+<td >
+<p><b>Templates</b></p>
+ 
+{% if objects %}
+  <table class='display'>
+  <tr>
+
+   <select style="width:300px; height:200px" multiple name="templates_list" id="templates_list" method="GET" >
+ {% for object in objects_templates %}     
+        {% for k, val in object.items() %}
+     
+   <option id="{{val}}" value="{{val}}" >{{val}}</option>"  
+
+
+      {% endfor %}
+    
+    {% endfor %}    
+
+
+</select>
+</tr>
+  
+  </table>
+{% endif %}
+
+
+
+
+
+</td><td>
+
+
+
+
+
+  <form class="form-inline" method="POST" action="{{url_for('add')}}">
+                     
+                        <div id="addnew-button"></div> 
+                 
+                        </form>
+                    
+
+</td>
+</tr>
+
+
+
+
+
+
+</table>
+
+</div>
+
+            
+
+
+        <!--js for bootstrap-->
+
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+  <!-- Bootstrap JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+  <script src="../js/jquery.multi-select.js"></script>
+<scrpt src="{{url_for("static", filename="js/jquery.multi-select.js")}}"></script>
+<script>
+$(document).ready(function(){
+    
+    $("#configuredIOC").on('change', function (e){
+
+    var optionSelected = $("option:selected", this);
+    var valueSelected = this.value;
+
+    var myText = optionSelected.text();
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("demo").innerHTML = this.responseText;
+    }
+    else{   //pass
+        }
+  };
+   
+  xmlhttp.open("GET", $SCRIPT_ROOT + myText, true);
+  xmlhttp.send();
+
+});
+});    
+
+   function loadXMLDoc()
+    {     
+          
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function()
+        {
+            if (req.readyState == 4)
+            {
+                if (req.status != 200)
+                {
+                    alert("error,please choose an option.")
+                   
+                    
+                }
+                else
+                {
+                    var response = JSON.parse(req.responseText)
+                    var reply = response.name
+                    
+                   
+                   location.reload(true)
+                 
+                    
+                }
+            }
+        }
+    
+        req.open('POST', $SCRIPT_ROOT + '/ajax')
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        var un =$("#name").text()
+        var address =$("#address").text()
+        var operation =$("#operation").text()
+       
+        var postVars = 'name='+un+'&address='+address+'&operation='+operation
+        
+        req.send(postVars)
+        
+        return false
+    };
+
+  
+
+  function Delete()
+    {     
+          
+        var req = new XMLHttpRequest();
+       
+        req.onreadystatechange = function()
+        {
+            if (req.readyState == 4)
+            {
+                if (req.status != 200)
+                {
+                     
+                    alert("wait a second")
+                    
+                    location.reload(true)
+                   
+                }
+                else
+                {
+                    var response = JSON.parse(req.responseText)
+                    var reply = response.name
+                  location.reload(true)
+                    
+                } 
+            }
+        }
+    
+        req.open('POST', '/remove')
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        var un =$("#name").text()
+        var postVars = 'name='+un
+        
+        req.send(postVars)
+
+        return false
+    };
+
+$(document).ready(function(){
+    
+    $("#templates_list").on('change', function (e){
+
+    var optionSelected = $("option:selected", this);
+    var valueSelected = this.value;
+
+    var myText = optionSelected.text();
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("addnew-button").innerHTML = this.responseText;
+    }
+    else{   //pass
+        }
+  };
+   
+  xmlhttp.open("GET", $SCRIPT_ROOT + '/addnew/'+ myText, true);
+  xmlhttp.send();
+
+});
+});
+
+
+ 
+
+
+</script>
+        
+
+        <!-- using it online
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
+                integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
+                integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
+                integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        -->
+        <script src="../static/bootstrap/js/jquery.min.js"></script> 
+        <script src="../static/bootstrap/js/popper.min.js"></script> 
+        <script src="../static/bootstrap/js/bootstrap.min.js"></script> 
+
+        <script src="../static/JavaScript.js"></script>
+          <script src="../js/jquery.multi-select.js"></script>
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>        
+    </body>
+</html>
